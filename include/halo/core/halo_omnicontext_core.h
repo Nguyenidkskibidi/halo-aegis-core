@@ -1,14 +1,7 @@
-/**
- * ============================================================================
- *  H.A.L.O.* AEGIS OMNI-HARDWARE (EXTREME RESCUE EDITION)
- * ============================================================================
- *  Kiến trúc sư: Nguyên | Tối ưu: Cache-Line Interleaving & SIMD NEON
- * ============================================================================
- */
 #pragma once
 #include <cstdint>
 #include <cstring>
-#include "halo_simd.h" // ĐÃ SỬA: Gọi trực tiếp vì nằm cùng folder core!
+// KHÔNG CẦN halo_simd.h NỮA! THUẬT TOÁN OMNI-SHADOW CHẤP HẾT!
 
 namespace halo::omnicontext {
 
@@ -22,7 +15,6 @@ namespace halo::omnicontext {
     #define HALO_ALL_ONES 0xFFFFFFFFUL
 #endif
 
-// Ma thuật De Bruijn đếm bit 0 cuối cùng (Trailing Zeros)
 static const uint8_t DeBruijnBitPosition[32] = {
     0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
     31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
@@ -42,31 +34,45 @@ class AdaptiveOmniEngine {
 private:
     static constexpr int32_t WORDS_PER_ROW = (64 + HALO_WORD_BITS - 1) / HALO_WORD_BITS;
     
-    // CẤU TRÚC: [Y][WORD][10 LAYERS] - Cache-Friendly tối thượng
-    alignas(64) NativeWord m_data[64][WORDS_PER_ROW][10];
+    // 15 Layers để lưu trữ thông tin phân tích (Ai/Cái gì cản đường)
+    alignas(64) NativeWord m_data[64][WORDS_PER_ROW][16]; 
+    
+    // 🔥 THUẬT TOÁN MỚI: BÓNG MA ĐỔ HỢP NHẤT (Chỉ có 1 lớp duy nhất)
+    alignas(64) NativeWord m_shadow[64][WORDS_PER_ROW];
 
 public:
-    void Init() noexcept { std::memset(m_data, 0, sizeof(m_data)); }
-
-    inline bool IsBitSet(uint8_t layer, int32_t x, int32_t y) const noexcept {
-        if(x < 0 || x >= 64 || y < 0 || y >= 64 || layer >= 10) return false;
-        return (m_data[y][x / HALO_WORD_BITS][layer] & ((NativeWord)1 << (x % HALO_WORD_BITS))) != 0;
+    void Init() noexcept { 
+        std::memset(m_data, 0, sizeof(m_data)); 
+        std::memset(m_shadow, 0, sizeof(m_shadow));
     }
 
     inline void SetBit(uint8_t layer, int32_t x, int32_t y) noexcept {
-        if(x < 0 || x >= 64 || y < 0 || y >= 64 || layer >= 10) return;
-        m_data[y][x / HALO_WORD_BITS][layer] |= ((NativeWord)1 << (x % HALO_WORD_BITS));
+        if(x < 0 || x >= 64 || y < 0 || y >= 64 || layer >= 15) return;
+        
+        NativeWord mask = ((NativeWord)1 << (x % HALO_WORD_BITS));
+        int32_t wordIdx = x / HALO_WORD_BITS;
+        
+        m_data[y][wordIdx][layer] |= mask;
+        
+        // PHÉP MÀU NẰM Ở ĐÂY: Ghi đè bóng ma ngay lúc tạo vật cản!
+        // Tốn thêm 1 phép tính lúc khởi tạo, nhưng cứu rỗi hàng triệu phép tính lúc Raycast!
+        m_shadow[y][wordIdx] |= mask;
     }
 
-    // PHẢN XẠ CỰC HẠN: Dùng SIMD NEON xử lý 10 lớp trong 1 nốt nhạc
+    inline bool IsBitSet(uint8_t layer, int32_t x, int32_t y) const noexcept {
+        if(x < 0 || x >= 64 || y < 0 || y >= 64 || layer >= 15) return false;
+        return (m_data[y][x / HALO_WORD_BITS][layer] & ((NativeWord)1 << (x % HALO_WORD_BITS))) != 0;
+    }
+
+    // 🔥 QUÉT ĐƯỜNG TỐC ĐỘ ÁNH SÁNG: O(1) COMPLEXITY
     __attribute__((always_inline))
     inline int32_t EscapeRaycast(int32_t startX, int32_t y) const noexcept {
         const int32_t startWord = startX / HALO_WORD_BITS;
         const int32_t startBit = startX % HALO_WORD_BITS;
         
         for (int32_t w = startWord; w < WORDS_PER_ROW; ++w) {
-            // Triệu hồi hàm SIMD từ halo_simd.h
-            NativeWord composite = halo::simd::Or10Layers64(m_data[y][w]);
+            // KHÔNG CẦN GỌI SIMD NỮA! ĐỌC THẲNG VÀO BÓNG MA!
+            NativeWord composite = m_shadow[y][w];
             
             if (w == startWord) {
                 composite &= (HALO_ALL_ONES << startBit);
