@@ -46,9 +46,11 @@ HALO-Aegis-Omniverse/
 │   └── utils/        # Math, Types, API Wrappers
 ├── examples/         # Survival Scenarios (Rescue, Urban Chaos)
 └── README.md         # You are here!
+```
 
 🚀 Quick Start (Rescue Mission)
 Since H.A.L.O. is Header-Only, just include it and save lives:
+```
 
 #include "halo/core/halo_omnicontext_core.h"
 #include "halo/navigation/halo_jps_plus.h"
@@ -65,13 +67,18 @@ int main() {
     
     return 0;
 }
+```
 
 Then, compile with extreme optimization:
+```
 
 g++ examples/main.cpp -Iinclude -o halo_rescue -O3 -march=native -std=c++20 -flto
+```
 
 Then
+```
 ./halo_rescue
+```
 
 🚑 Humanitarian Mission
 This project is strictly open-source. We encourage developers to use H.A.L.O. for:
