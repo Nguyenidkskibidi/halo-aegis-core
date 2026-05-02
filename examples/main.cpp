@@ -4,7 +4,7 @@
 #include <string>
 
 // Giữ nguyên file core thần thánh của bồ
-#include "halo/core/halo_omnicontext_core.h"
+#include "/Users/nguyenmanhhung/halo-aegis-core/include/halo/core/halo_omnicontext_core.h"
 
 using namespace halo::omnicontext;
 
