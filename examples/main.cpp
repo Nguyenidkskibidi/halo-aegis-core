@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "/Users/nguyenmanhhung/halo-aegis-core/include/halo/core/halo_omnicontext_core.h"
 
@@ -21,21 +22,22 @@ struct Localization {
 };
 
 #define RAYCAST_1 checksum += aegis.EscapeRaycast(robotPos.x, robotPos.y)
-#define RAYCAST_4                                                              \
-  RAYCAST_1;                                                                   \
-  RAYCAST_1;                                                                   \
-  RAYCAST_1;                                                                   \
-  RAYCAST_1
-#define RAYCAST_16                                                             \
-  RAYCAST_4;                                                                   \
-  RAYCAST_4;                                                                   \
-  RAYCAST_4;                                                                   \
-  RAYCAST_4
-#define RAYCAST_64                                                             \
-  RAYCAST_16;                                                                  \
-  RAYCAST_16;                                                                  \
-  RAYCAST_16;                                                                  \
-  RAYCAST_16
+#define RAYCAST_4 RAYCAST_1; RAYCAST_1; RAYCAST_1; RAYCAST_1
+#define RAYCAST_16 RAYCAST_4; RAYCAST_4; RAYCAST_4; RAYCAST_4
+#define RAYCAST_64 RAYCAST_16; RAYCAST_16; RAYCAST_16; RAYCAST_16
+
+bool IsSafePath(int x, int y) {
+  if (x >= 1 && x <= 8 && y == 15) return true;
+  if (x == 8 && y >= 12 && y <= 15) return true;
+  if (x >= 8 && x <= 22 && y == 12) return true;
+  if (x == 22 && y >= 12 && y <= 18) return true;
+  if (x >= 22 && x <= 38 && y == 18) return true;
+  if (x == 38 && y >= 14 && y <= 18) return true;
+  if (x >= 38 && x <= 50 && y == 14) return true;
+  if (x == 50 && y >= 14 && y <= 17) return true;
+  if (x >= 50 && x <= 62 && y == 17) return true;
+  return false;
+}
 
 void RunTrueHardwareTest() {
   int choice;
@@ -49,43 +51,40 @@ void RunTrueHardwareTest() {
 
   Localization lang;
   if (choice == 1) {
-    lang = {"🚀 H.A.L.O. AEGIS: ÉP XUNG VẬT LÝ M1 (ĐANG CHẠY 96 TỶ LỆNH, ĐỢI "
-            "10 GIÂY!!)...",
-            "🌌 H.A.L.O. OMNI-SHADOW: TỐC ĐỘ PHẦN CỨNG THỰC TẾ",
+    lang = {"🚀 H.A.L.O. AEGIS: KHỞI ĐỘNG MA TRẬN ĐỊA NGỤC (96 TỶ LỆNH)...",
+            "🌌 H.A.L.O. OMNI-SHADOW: PHÂN TÍCH ĐƯỜNG ĐI LƯỢNG TỬ",
             "✅ Tốc độ VẬT LÝ phá vỡ giới hạn : ",
-            "✅ Điểm rủi ro tiếp theo         : ",
+            "✅ Điểm rủi ro (Raycast đâm trúng) : ",
             "🛡️ Checksum an ninh              : "};
   } else {
-    lang = {"🚀 H.A.L.O. AEGIS: HARDWARE OVERCLOCK (RUNNING 96 BILLION OPS, "
-            "WAIT 10 SECS!!)...",
-            "🌌 H.A.L.O. OMNI-SHADOW: TRUE PHYSICAL HARDWARE SPEED",
+    lang = {"🚀 H.A.L.O. AEGIS: HELL MATRIX ACTIVATED (96 BILLION OPS)...",
+            "🌌 H.A.L.O. OMNI-SHADOW: QUANTUM PATH ANALYSIS",
             "✅ PHYSICAL Breaking Speed Limit : ",
-            "✅ Next Risk Vector              : ",
+            "✅ Raycast Impact Vector         : ",
             "🛡️ Security Checksum             : "};
   }
 
   AdaptiveOmniEngine aegis;
   aegis.Init();
 
-  Vec2i robotPos(2, 15);
-  Vec2i victimPos(62, 15);
+  Vec2i robotPos(1, 15);
+  Vec2i victimPos(62, 17);
 
-  for (int y = 0; y < 64; ++y)
-    if (y != 15)
-      aegis.SetBit(0, 30, y);
-  for (int x = 0; x < 64; x += 3)
-    aegis.SetBit(1, x, 14);
-  for (int x = 20; x < 25; ++x)
-    aegis.SetBit(4, x, 15);
-  aegis.SetBit(5, 40, 15);
-  for (int y = 10; y < 20; ++y)
-    aegis.SetBit(10, 15, y);
-  for (int x = 45; x < 50; ++x)
-    aegis.SetBit(11, x, 15);
-  aegis.SetBit(12, 35, 15);
-  aegis.SetBit(13, 55, 15);
-  for (int x = 50; x < 53; ++x)
-    aegis.SetBit(14, x, 15);
+  for (int y = 10; y <= 20; ++y) {
+    for (int x = 0; x < 64; ++x) {
+      if (IsSafePath(x, y)) continue;
+      if (x == robotPos.x && y == robotPos.y) continue;
+      if (x == victimPos.x && y == victimPos.y) continue;
+
+      if (x % 7 == 0) aegis.SetBit(0, x, y);
+      else if (x % 11 == 0) aegis.SetBit(10, x, y);
+      else if (x % 13 == 0) aegis.SetBit(12, x, y);
+      else if (y == 13 && x > 10 && x < 60) aegis.SetBit(4, x, y);
+      else if (y == 16 && x > 5 && x < 55) aegis.SetBit(14, x, y);
+      else if ((x + y) % 9 == 0) aegis.SetBit(13, x, y);
+      else if ((x * y) % 17 == 0) aegis.SetBit(5, x, y);
+    }
+  }
 
   const uint64_t BATCHES = 1500000000ULL;
   const uint64_t TOTAL_ITERS = BATCHES * 64;
@@ -109,29 +108,24 @@ void RunTrueHardwareTest() {
       std::chrono::duration<long double, std::milli>(t2 - t1).count();
   long double avgMs = totalTimeMs / static_cast<long double>(TOTAL_ITERS);
 
-  std::cout << "\n============================================================="
-               "===================\n";
+  std::cout << "\n================================================================================\n";
   std::cout << " " << lang.header << "\n";
-  std::cout << "==============================================================="
-               "=================\n";
+  std::cout << "================================================================================\n";
 
-  std::cout << lang.speedLabel << std::fixed << std::setprecision(11) << avgMs
-            << " ms\n";
-  std::cout << lang.riskLabel << "(" << escapePoint << ", " << robotPos.y
-            << ")\n";
+  std::cout << lang.speedLabel << std::fixed << std::setprecision(11) << avgMs << " ms\n";
+  std::cout << lang.riskLabel << "(" << escapePoint << ", " << robotPos.y << ")\n";
   std::cout << lang.checksumLabel << prevent_opt << "\n";
-  std::cout << "==============================================================="
-               "=================\n\n";
+  std::cout << "================================================================================\n\n";
 
-  for (int y = 12; y < 19; ++y) {
+  for (int y = 10; y <= 20; ++y) {
     std::cout << std::setw(2) << y << " ";
     for (int x = 0; x < 64; ++x) {
       if (x == robotPos.x && y == robotPos.y)
         std::cout << "🤖";
       else if (x == victimPos.x && y == victimPos.y)
         std::cout << "❤️ ";
-      else if (x == escapePoint && y == robotPos.y)
-        std::cout << "🎯";
+      else if (IsSafePath(x, y))
+        std::cout << "✨";
       else {
         bool danger = false;
         int hitLayer = -1;
@@ -142,26 +136,18 @@ void RunTrueHardwareTest() {
             break;
           }
         if (danger) {
-          if (hitLayer == 0)
-            std::cout << "██";
-          else if (hitLayer == 10)
-            std::cout << "💥";
-          else if (hitLayer == 11)
-            std::cout << "☁️ ";
-          else if (hitLayer == 12)
-            std::cout << "🔥";
-          else if (hitLayer == 13)
-            std::cout << "🛸";
-          else if (hitLayer == 14)
-            std::cout << "🧲";
-          else if (hitLayer == 5)
-            std::cout << "🦅";
-          else if (hitLayer == 4)
-            std::cout << "⚡";
-          else
-            std::cout << "XX";
-        } else
+          if (hitLayer == 0) std::cout << "██";
+          else if (hitLayer == 10) std::cout << "💥";
+          else if (hitLayer == 11) std::cout << "☁️ ";
+          else if (hitLayer == 12) std::cout << "🔥";
+          else if (hitLayer == 13) std::cout << "🛸";
+          else if (hitLayer == 14) std::cout << "🧲";
+          else if (hitLayer == 5) std::cout << "🦅";
+          else if (hitLayer == 4) std::cout << "⚡";
+          else std::cout << "XX";
+        } else {
           std::cout << " .";
+        }
       }
     }
     std::cout << "\n";
