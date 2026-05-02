@@ -22,8 +22,8 @@ public:
         }
       }
     }
-    std::cout << "🌌 [WORMHOLE ENGINE]: Đã đào thành công " << wormholesCreated
-              << " Lỗ Sâu Không Gian!\n";
+    std::cout << "🌌 [WORMHOLE ENGINE]: Digging Complete " << wormholesCreated
+              << " Wormhole!\n";
   }
 };
 

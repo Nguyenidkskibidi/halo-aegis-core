@@ -19,7 +19,7 @@ public:
     m_jumpTable = arena.AllocateArray<int32_t>(size * 8);
     std::memset(m_jumpTable, 0, size * 8 * sizeof(int32_t));
 
-    std::cout << "⚡ [JPS+ ENGINE]: Đang rèn Bảng Cửu Chương Không Gian...\n";
+    std::cout << "⚡ [JPS+ ENGINE]: Studying...";
 
     int32_t w = grid->Width();
     int32_t h = grid->Size() / w;
