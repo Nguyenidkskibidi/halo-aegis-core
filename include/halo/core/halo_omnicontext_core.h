@@ -111,7 +111,8 @@ public:
         
         NativeWord composite = m_shadow_map[y][startWord] & startMask;
         
-        if ([[likely]] composite != 0) {
+        // Dùng Cấm thuật LLVM thay vì C++20 cho nó "trâu bò" tuyệt đối!
+        if (__builtin_expect(composite != 0, 1)) {
             // Phát hiện có vật cản ngay trong Word hiện tại!
             return (startWord * HALO_WORD_BITS) + HardwareBitScanForward(composite);
         }

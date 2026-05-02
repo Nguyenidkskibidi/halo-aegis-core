@@ -72,7 +72,7 @@ int main() {
 Then, compile with extreme optimization:
 ```
 
-g++ examples/main.cpp -Iinclude -o halo_rescue -O3 -march=native -std=c++20 -flto
+g++ examples/main.cpp -Iinclude -o halo_rescue -O3 -march=native -std=c++20 -flto -DNDEBUG
 ```
 
 Then
