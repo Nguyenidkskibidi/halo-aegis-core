@@ -1,0 +1,22 @@
+# Operating System & IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Build artifacts and debug symbols
+*.dSYM/
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.out
+*.log
+build/
+.cache/
+
+# Executables & test binaries
+/halo_*
+/test_*

@@ -1,10 +1,8 @@
 #include <chrono>
-#include <iomanip>
-#include <iostream>
-#include <string>
-#include <vector>
+#include <cstdint>
+#include <cstdio>
 
-#include "/Users/nguyenmanhhung/halo-aegis-core/include/halo/core/halo_omnicontext_core.h"
+#include "halo/core/halo_omnicontext_core.h"
 
 using namespace halo::omnicontext;
 
@@ -14,11 +12,11 @@ struct Vec2i {
 };
 
 struct Localization {
-  std::string startMsg;
-  std::string header;
-  std::string speedLabel;
-  std::string riskLabel;
-  std::string checksumLabel;
+  const char *startMsg;
+  const char *header;
+  const char *speedLabel;
+  const char *riskLabel;
+  const char *checksumLabel;
 };
 
 #define RAYCAST_1 checksum += aegis.EscapeRaycast(robotPos.x, robotPos.y)
@@ -40,29 +38,11 @@ bool IsSafePath(int x, int y) {
 }
 
 void RunTrueHardwareTest() {
-  int choice;
-  std::cout << "==========================================\n";
-  std::cout << "   SELECT LANGUAGE / CHỌN NGÔN NGỮ\n";
-  std::cout << "   1. Tiếng Việt (Vietnam Mode 😎)\n";
-  std::cout << "   2. English (International Mode 🌍)\n";
-  std::cout << "==========================================\n";
-  std::cout << "Choice/Lựa chọn (1-2): ";
-  std::cin >> choice;
-
-  Localization lang;
-  if (choice == 1) {
-    lang = {"🚀 H.A.L.O. AEGIS: KHỞI ĐỘNG MA TRẬN ĐỊA NGỤC (96 TỶ LỆNH)...",
-            "🌌 H.A.L.O. OMNI-SHADOW: PHÂN TÍCH ĐƯỜNG ĐI LƯỢNG TỬ",
-            "✅ Tốc độ VẬT LÝ phá vỡ giới hạn : ",
-            "✅ Điểm rủi ro (Raycast đâm trúng) : ",
-            "🛡️ Checksum an ninh              : "};
-  } else {
-    lang = {"🚀 H.A.L.O. AEGIS: HELL MATRIX ACTIVATED (96 BILLION OPS)...",
-            "🌌 H.A.L.O. OMNI-SHADOW: QUANTUM PATH ANALYSIS",
-            "✅ PHYSICAL Breaking Speed Limit : ",
-            "✅ Raycast Impact Vector         : ",
-            "🛡️ Security Checksum             : "};
-  }
+  Localization lang = {"[HALO] HELL MATRIX ACTIVATED (96 BILLION OPS)...",
+                       "HALO OMNI-SHADOW: QUANTUM PATH ANALYSIS",
+                       "PHYSICAL Breaking Speed Limit : ",
+                       "Raycast Impact Vector         : ",
+                       "Security Checksum             : "};
 
   AdaptiveOmniEngine aegis;
   aegis.Init();
@@ -91,7 +71,7 @@ void RunTrueHardwareTest() {
 
   uint64_t checksum = 0;
 
-  std::cout << "\n" << lang.startMsg << std::endl;
+  std::printf("\n%s\n", lang.startMsg);
 
   auto t1 = std::chrono::high_resolution_clock::now();
 
@@ -108,24 +88,24 @@ void RunTrueHardwareTest() {
       std::chrono::duration<long double, std::milli>(t2 - t1).count();
   long double avgMs = totalTimeMs / static_cast<long double>(TOTAL_ITERS);
 
-  std::cout << "\n================================================================================\n";
-  std::cout << " " << lang.header << "\n";
-  std::cout << "================================================================================\n";
+  std::printf("\n================================================================================\n");
+  std::printf(" %s\n", lang.header);
+  std::printf("================================================================================\n");
 
-  std::cout << lang.speedLabel << std::fixed << std::setprecision(11) << avgMs << " ms\n";
-  std::cout << lang.riskLabel << "(" << escapePoint << ", " << robotPos.y << ")\n";
-  std::cout << lang.checksumLabel << prevent_opt << "\n";
-  std::cout << "================================================================================\n\n";
+  std::printf("%s%.11Lf ms\n", lang.speedLabel, avgMs);
+  std::printf("%s(%d, %d)\n", lang.riskLabel, escapePoint, robotPos.y);
+  std::printf("%s%llu\n", lang.checksumLabel, (unsigned long long)prevent_opt);
+  std::printf("================================================================================\n\n");
 
   for (int y = 10; y <= 20; ++y) {
-    std::cout << std::setw(2) << y << " ";
+    std::printf("%2d ", y);
     for (int x = 0; x < 64; ++x) {
       if (x == robotPos.x && y == robotPos.y)
-        std::cout << "🤖";
+        std::printf("🤖");
       else if (x == victimPos.x && y == victimPos.y)
-        std::cout << "❤️ ";
+        std::printf("❤️ ");
       else if (IsSafePath(x, y))
-        std::cout << "✨";
+        std::printf("✨");
       else {
         bool danger = false;
         int hitLayer = -1;
@@ -136,21 +116,21 @@ void RunTrueHardwareTest() {
             break;
           }
         if (danger) {
-          if (hitLayer == 0) std::cout << "██";
-          else if (hitLayer == 10) std::cout << "💥";
-          else if (hitLayer == 11) std::cout << "☁️ ";
-          else if (hitLayer == 12) std::cout << "🔥";
-          else if (hitLayer == 13) std::cout << "🛸";
-          else if (hitLayer == 14) std::cout << "🧲";
-          else if (hitLayer == 5) std::cout << "🦅";
-          else if (hitLayer == 4) std::cout << "⚡";
-          else std::cout << "XX";
+          if (hitLayer == 0) std::printf("██");
+          else if (hitLayer == 10) std::printf("💥");
+          else if (hitLayer == 11) std::printf("☁️ ");
+          else if (hitLayer == 12) std::printf("🔥");
+          else if (hitLayer == 13) std::printf("🛸");
+          else if (hitLayer == 14) std::printf("🧲");
+          else if (hitLayer == 5) std::printf("🦅");
+          else if (hitLayer == 4) std::printf("⚡");
+          else std::printf("XX");
         } else {
-          std::cout << " .";
+          std::printf(" .");
         }
       }
     }
-    std::cout << "\n";
+    std::printf("\n");
   }
 }
 

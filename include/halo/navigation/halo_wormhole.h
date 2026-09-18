@@ -1,14 +1,16 @@
 #pragma once
+
 #include "halo_graph.h"
-#include <iostream>
+#include <cmath>
+#include <cstdint>
 
 namespace halo::urban {
 
 class WormholeEngine {
 public:
-  static void DigWormholes(CityMap &map) noexcept {
-    int32_t nodes = map.GetNodeCount();
-    CityIntersection *intersections = map.GetNodes();
+  static int32_t DigWormholes(CityMap &map) noexcept {
+    const int32_t nodes = map.GetNodeCount();
+    const CityIntersection *intersections = map.GetNodes();
     int32_t wormholesCreated = 0;
 
     for (int32_t i = 0; i < nodes; ++i) {
@@ -22,8 +24,7 @@ public:
         }
       }
     }
-    std::cout << "🌌 [WORMHOLE ENGINE]: Digging Complete " << wormholesCreated
-              << " Wormhole!\n";
+    return wormholesCreated;
   }
 };
 
