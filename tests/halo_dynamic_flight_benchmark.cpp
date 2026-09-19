@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <numeric>
 #include <vector>
 
@@ -17,6 +18,15 @@
 #include "halo/utils/halo_types.h"
 
 namespace halo::test {
+
+template <typename T>
+[[gnu::always_inline]] inline void DoNotOptimize(T const& val) {
+  asm volatile("" : : "g"(val) : "memory");
+}
+template <typename T>
+[[gnu::always_inline]] inline void DoNotOptimize(T& val) {
+  asm volatile("" : "+m"(val) : : "memory");
+}
 
 #if defined(__SANITIZE_ADDRESS__)
 #define HALO_SANITIZER_ACTIVE 1
@@ -85,7 +95,7 @@ template <typename GridType, typename MatrixType>
 void RunDynamicFlightSimulation() {
   puts("[FLIGHT] EMBEDDED DRONE BENCHMARK");
   bool pinned = memory::PinThreadToPerformanceCore(0);
-  (void)pinned;
+  DoNotOptimize(pinned);
 
   constexpr int32_t MAP_W = 512;
   constexpr int32_t MAP_H = 512;
@@ -108,8 +118,11 @@ void RunDynamicFlightSimulation() {
   supremeEngine.BootSystem(&grid, nullptr, SUPREME_RAM_MB);
 
   size_t totalMemoryBytes = envArena.GetCapacity() + supremeEngine.GetMasterArenaCapacity();
-  (void)totalMemoryBytes;
-  assert(totalMemoryBytes <= 16 * 1024 * 1024 && "GATE FAILED: Total memory must not exceed 16 MB");
+  DoNotOptimize(totalMemoryBytes);
+  if (totalMemoryBytes > 16 * 1024 * 1024) {
+    std::fprintf(stderr, "GATE FAILED: Total memory %zu bytes exceeds 16 MB\n", totalMemoryBytes);
+    std::exit(1);
+  }
 
   // Precompute Global Macro Path (Tier 1 True JPS+)
   Vec2i startTile(15, 10);
@@ -117,6 +130,7 @@ void RunDynamicFlightSimulation() {
 
   PathResult macroRoute = supremeEngine.RouteGrid(startTile, goalTile);
   assert(macroRoute.found && "Macro path must be found across flight maze");
+  DoNotOptimize(macroRoute);
 
   // Initialize 500 Moving Obstacle Swarm
   flight::DynamicObstacleSwarm<500> swarm;
@@ -128,9 +142,9 @@ void RunDynamicFlightSimulation() {
                           Vec2f(static_cast<float>(goalTile.x), static_cast<float>(goalTile.y)),
                           macroRoute);
 
-  // Execute Closed-Loop 100 Hz Flight Simulation (1,000 meters / 1,000+ steps)
+  // Execute Closed-Loop 100 Hz Flight Simulation (5,000 steps)
   constexpr float DT = 0.01f;
-  constexpr size_t MIN_STEPS = 1000;
+  constexpr size_t TARGET_STEPS = 5000;
   size_t stepCount = 0;
   size_t collisionCount = 0;
   size_t deadlineMisses = 0;
@@ -143,7 +157,7 @@ void RunDynamicFlightSimulation() {
   float minObsClearance = 999.0f;
   float totalDistanceTraversed = 0.0f;
 
-  while (stepCount < MIN_STEPS || !flightEngine.HasReachedGoal(5.0f)) {
+  while (stepCount < TARGET_STEPS) {
     swarm.Update(DT, hazardMatrix, grid);
     flight::FlightTelemetry telem = flightEngine.StepControlCycle(DT, hazardMatrix, &swarm);
     ++stepCount;
@@ -156,8 +170,6 @@ void RunDynamicFlightSimulation() {
     totalEvasionLatencyNs += static_cast<double>(telem.evasionLatencyNs);
     maxEvasionLatencyNs = std::max(maxEvasionLatencyNs, static_cast<double>(telem.evasionLatencyNs));
 
-    (void)evasionActiveCount;
-    (void)deadlineMisses;
     if (telem.evasionActive) ++evasionActiveCount;
     if (telem.deadlineMissed) ++deadlineMisses;
 
@@ -170,10 +182,18 @@ void RunDynamicFlightSimulation() {
 
     int32_t dgx = static_cast<int32_t>(drone.pos.x + 0.5f);
     int32_t dgy = static_cast<int32_t>(drone.pos.y + 0.5f);
-    if (!grid.IsWalkable(dgx, dgy)) ++collisionCount;
-
-    if (stepCount >= 5000) break;
+    if (!grid.IsWalkable(dgx, dgy) || hazardMatrix.IsBitSet(swar::Layer::STATIC_WALLS, dgx, dgy)) {
+      ++collisionCount;
+    }
   }
+
+  DoNotOptimize(collisionCount);
+  DoNotOptimize(deadlineMisses);
+  DoNotOptimize(evasionActiveCount);
+  DoNotOptimize(totalDistanceTraversed);
+  DoNotOptimize(totalCycleTimeNs);
+  DoNotOptimize(totalEvasionLatencyNs);
+  DoNotOptimize(minObsClearance);
 
   double avgCycleTimeUs = (totalCycleTimeNs / static_cast<double>(stepCount)) / 1000.0;
   double avgEvasionLatencyNs = totalEvasionLatencyNs / static_cast<double>(stepCount);
@@ -182,14 +202,29 @@ void RunDynamicFlightSimulation() {
   printf("  Cycles:%zu | Dist:%.1fm | Evasion:%.1fns | Cycle:%.3fus | Collisions:%zu (%.2f%%)\n",
          stepCount, totalDistanceTraversed, avgEvasionLatencyNs, avgCycleTimeUs, collisionCount, collisionRate);
 
-  assert(collisionCount == 0 && "GATE FAILED: Collision rate must be exactly 0.00%");
-  assert(deadlineMisses == 0 && "GATE FAILED: Hard deadline miss rate must be exactly 0.00%");
+  if (collisionCount != 0) {
+    std::fprintf(stderr, "GATE FAILED: Collisions detected: %zu\n", collisionCount);
+    std::exit(1);
+  }
+  if (deadlineMisses != 0) {
+    std::fprintf(stderr, "GATE FAILED: Deadline misses detected: %zu\n", deadlineMisses);
+    std::exit(1);
+  }
 #if defined(HALO_SANITIZER_ACTIVE)
-  assert(avgEvasionLatencyNs < 3500.0 && "GATE FAILED: Sanitized evasion latency too high");
+  if (avgEvasionLatencyNs >= 3500.0) {
+    std::fprintf(stderr, "GATE FAILED: Sanitized evasion latency too high: %.1fns\n", avgEvasionLatencyNs);
+    std::exit(1);
+  }
 #else
-  assert(avgEvasionLatencyNs < 800.0 && "GATE FAILED: Average evasion latency must be strictly < 800 ns");
+  if (avgEvasionLatencyNs >= 800.0) {
+    std::fprintf(stderr, "GATE FAILED: Evasion latency too high: %.1fns\n", avgEvasionLatencyNs);
+    std::exit(1);
+  }
 #endif
-  assert(avgCycleTimeUs < 1500.0 && "GATE FAILED: Average cycle time must be < 1.5 ms");
+  if (avgCycleTimeUs >= 1500.0) {
+    std::fprintf(stderr, "GATE FAILED: Cycle time too high: %.3fus\n", avgCycleTimeUs);
+    std::exit(1);
+  }
 
   puts("  ALL EMBEDDED FLIGHT GATES PASSED (0.00% COLLISIONS)");
 }

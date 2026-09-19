@@ -58,6 +58,17 @@ public:
             (static_cast<NativeWord>(1) << (x & 63))) != 0;
   }
 
+  [[nodiscard]] HALO_INLINE NativeWord GetShadowRow(int32_t y) const noexcept {
+    return m_shadow_map[y][0];
+  }
+
+  [[nodiscard]] HALO_INLINE static int32_t RaycastRow(NativeWord compositeRow, int32_t startX) noexcept {
+    const NativeWord startMask = HALO_ALL_ONES << (startX & 63);
+    const NativeWord composite = compositeRow & startMask;
+    const int32_t tz = std::countr_zero(composite);
+    return tz == 64 ? (MAP_SIZE - 1) : tz;
+  }
+
   // Pure in-register Escape Raycast (single cache line, ~0.25 ns latency)
   [[nodiscard]] HALO_INLINE int32_t
   EscapeRaycast(const int32_t startX, const int32_t y) const noexcept {
@@ -66,10 +77,7 @@ public:
     }
 
     if constexpr (WORDS_PER_ROW == 1) {
-      const NativeWord startMask = HALO_ALL_ONES << (startX & 63);
-      const NativeWord composite = m_shadow_map[y][0] & startMask;
-      const int32_t tz = std::countr_zero(composite);
-      return tz == 64 ? (MAP_SIZE - 1) : tz;
+      return RaycastRow(m_shadow_map[y][0], startX);
     } else {
       const int32_t startWord = startX >> 6;
       const int32_t startBit = startX & 63;

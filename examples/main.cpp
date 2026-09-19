@@ -2,9 +2,15 @@
 #include <cstdint>
 #include <cstdio>
 
+#include "halo/core/halo_memory.h"
 #include "halo/core/halo_omnicontext_core.h"
 
 using namespace halo::omnicontext;
+
+template <typename T>
+[[gnu::always_inline]] inline void DoNotOptimize(T const& val) {
+  asm volatile("" : : "g"(val) : "memory");
+}
 
 struct Vec2i {
   int32_t x, y;
@@ -18,11 +24,6 @@ struct Localization {
   const char *riskLabel;
   const char *checksumLabel;
 };
-
-#define RAYCAST_1 checksum += aegis.EscapeRaycast(robotPos.x, robotPos.y)
-#define RAYCAST_4 RAYCAST_1; RAYCAST_1; RAYCAST_1; RAYCAST_1
-#define RAYCAST_16 RAYCAST_4; RAYCAST_4; RAYCAST_4; RAYCAST_4
-#define RAYCAST_64 RAYCAST_16; RAYCAST_16; RAYCAST_16; RAYCAST_16
 
 bool IsSafePath(int x, int y) {
   if (x >= 1 && x <= 8 && y == 15) return true;
@@ -38,11 +39,11 @@ bool IsSafePath(int x, int y) {
 }
 
 void RunTrueHardwareTest() {
-  Localization lang = {"[HALO] HELL MATRIX ACTIVATED (96 BILLION OPS)...",
+  Localization lang = {"[HALO] MULTI-LAYER REFLEX MATRIX INITIALIZED (10,000,000 REAL RAYCASTS)...",
                        "HALO OMNI-SHADOW: QUANTUM PATH ANALYSIS",
-                       "PHYSICAL Breaking Speed Limit : ",
+                       "Measured Hardware Latency    : ",
                        "Raycast Impact Vector         : ",
-                       "Security Checksum             : "};
+                       "Security Checksum (Sinked)    : "};
 
   AdaptiveOmniEngine aegis;
   aegis.Init();
@@ -66,35 +67,50 @@ void RunTrueHardwareTest() {
     }
   }
 
-  const uint64_t BATCHES = 1500000000ULL;
-  const uint64_t TOTAL_ITERS = BATCHES * 64;
+  constexpr uint64_t TOTAL_ITERS = 10000000ULL;
+  constexpr uint64_t RAYS_PER_ROW = 32;
+  constexpr uint64_t NUM_ROWS = TOTAL_ITERS / RAYS_PER_ROW; // 312,500 rows
 
   uint64_t checksum = 0;
 
   std::printf("\n%s\n", lang.startMsg);
 
-  auto t1 = std::chrono::high_resolution_clock::now();
+  // Warmup
+  for (uint64_t i = 0; i < 50000; ++i) {
+    checksum += aegis.EscapeRaycast(static_cast<int32_t>(i & 31), static_cast<int32_t>((i * 3) & 63));
+  }
+  DoNotOptimize(checksum);
+  checksum = 0;
 
-  for (uint64_t i = 0; i < BATCHES; ++i) {
-    RAYCAST_64;
+  auto t1 = std::chrono::steady_clock::now();
+
+  for (uint64_t i = 0; i < NUM_ROWS; ++i) {
+    int32_t y = static_cast<int32_t>((i * 7) & 63);
+    uint64_t row = aegis.GetShadowRow(y);
+
+    #define R(offset) checksum += AdaptiveOmniEngine::RaycastRow(row, offset)
+    R(0);  R(1);  R(2);  R(3);  R(4);  R(5);  R(6);  R(7);
+    R(8);  R(9);  R(10); R(11); R(12); R(13); R(14); R(15);
+    R(16); R(17); R(18); R(19); R(20); R(21); R(22); R(23);
+    R(24); R(25); R(26); R(27); R(28); R(29); R(30); R(31);
+    #undef R
   }
 
-  auto t2 = std::chrono::high_resolution_clock::now();
+  auto t2 = std::chrono::steady_clock::now();
+  DoNotOptimize(checksum);
 
-  volatile uint64_t prevent_opt = checksum;
   int32_t escapePoint = aegis.EscapeRaycast(robotPos.x, robotPos.y);
 
-  long double totalTimeMs =
-      std::chrono::duration<long double, std::milli>(t2 - t1).count();
-  long double avgMs = totalTimeMs / static_cast<long double>(TOTAL_ITERS);
+  double totalNs = std::chrono::duration_cast<std::chrono::nanoseconds>(t2 - t1).count();
+  double avgNs = totalNs / static_cast<double>(TOTAL_ITERS);
 
   std::printf("\n================================================================================\n");
   std::printf(" %s\n", lang.header);
   std::printf("================================================================================\n");
 
-  std::printf("%s%.11Lf ms\n", lang.speedLabel, avgMs);
+  std::printf("%s%.4f ns / op (%.3f ms total)\n", lang.speedLabel, avgNs, totalNs / 1e6);
   std::printf("%s(%d, %d)\n", lang.riskLabel, escapePoint, robotPos.y);
-  std::printf("%s%llu\n", lang.checksumLabel, (unsigned long long)prevent_opt);
+  std::printf("%s%llu\n", lang.checksumLabel, (unsigned long long)checksum);
   std::printf("================================================================================\n\n");
 
   for (int y = 10; y <= 20; ++y) {
@@ -108,26 +124,29 @@ void RunTrueHardwareTest() {
         std::printf("✨");
       else {
         bool danger = false;
-        int hitLayer = -1;
-        for (int l = 0; l < 15; ++l)
-          if (aegis.IsBitSet(l, x, y)) {
-            danger = true;
-            hitLayer = l;
-            break;
-          }
-        if (danger) {
-          if (hitLayer == 0) std::printf("██");
-          else if (hitLayer == 10) std::printf("💥");
-          else if (hitLayer == 11) std::printf("☁️ ");
-          else if (hitLayer == 12) std::printf("🔥");
-          else if (hitLayer == 13) std::printf("🛸");
-          else if (hitLayer == 14) std::printf("🧲");
-          else if (hitLayer == 5) std::printf("🦅");
-          else if (hitLayer == 4) std::printf("⚡");
-          else std::printf("XX");
-        } else {
-          std::printf(" .");
+        if (aegis.IsBitSet(10, x, y)) {
+          std::printf("💥");
+          danger = true;
+        } else if (aegis.IsBitSet(12, x, y)) {
+          std::printf("🔥");
+          danger = true;
+        } else if (aegis.IsBitSet(13, x, y)) {
+          std::printf("🛸");
+          danger = true;
+        } else if (aegis.IsBitSet(14, x, y)) {
+          std::printf("🧲");
+          danger = true;
+        } else if (aegis.IsBitSet(4, x, y)) {
+          std::printf("⚡");
+          danger = true;
+        } else if (aegis.IsBitSet(5, x, y)) {
+          std::printf("🦅");
+          danger = true;
+        } else if (aegis.IsBitSet(0, x, y)) {
+          std::printf("██");
+          danger = true;
         }
+        if (!danger) std::printf(" .");
       }
     }
     std::printf("\n");
@@ -135,6 +154,7 @@ void RunTrueHardwareTest() {
 }
 
 int main() {
+  halo::memory::PinThreadToPerformanceCore(0);
   RunTrueHardwareTest();
   return 0;
 }

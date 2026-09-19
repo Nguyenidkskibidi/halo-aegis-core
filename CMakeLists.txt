@@ -42,6 +42,9 @@ if (HALO_BUILD_BENCHMARKS)
 
   add_executable(halo_game_universal_benchmark tests/halo_game_universal_benchmark.cpp)
   target_link_libraries(halo_game_universal_benchmark PRIVATE halo_aegis_core)
+
+  add_executable(halo_universal_spatial_benchmark tests/halo_universal_spatial_benchmark.cpp)
+  target_link_libraries(halo_universal_spatial_benchmark PRIVATE halo_aegis_core)
 endif()
 
 if (HALO_BUILD_EXAMPLES)
