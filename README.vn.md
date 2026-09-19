@@ -5,7 +5,10 @@
 > 🌐 **Ngôn ngữ**: [English](README.md) | **Tiếng Việt (Toàn Diện)**
 
 > *"Trong cứu nạn cứu hộ và bay tự hành, một phần nghìn giây là lằn ranh mong manh giữa sự sống và thảm kịch. H.A.L.O. đóng vai trò là bộ gia tốc toán học tối thượng, bảo đảm CPU không bao giờ lãng phí một chu kỳ máy nào trong việc tìm kiếm con đường sinh tồn."*  
-> — **Tổng công trình sư / Kiến trúc sư: Nguyên**
+> — **Tổng công trình sư / Kiến trúc sư: Tôi**
+
+> *"Cái thuật toán này ổn lắm, chắc vậy."*  
+> — **Không ai cả.**
 
 [![Hippocratic License HL3-CL-ECO-LAW-MIL-SUP-SV](https://img.shields.io/static/v1?label=Hippocratic%20License&message=HL3-CL-ECO-LAW-MIL-SUP-SV&labelColor=5e2751&color=bc8c3d)](https://firstdonoharm.dev/version/3/0/cl-eco-law-mil-sup-sv.html)
 [![Standard](https://img.shields.io/badge/C%2B%2B-20%2F23-blue.svg)](#)
@@ -20,6 +23,7 @@
 
 ## 📑 Mục Lục
 1. [Sứ Mệnh & Triết Lý Thiết Kế](#-sứ-mệnh--triết-lý-thiết-kế)
+   - [Ý Nghĩa Tên Gọi: "H.A.L.O. Aegis Core" Là Gì?](#-ý-nghĩa-tên-gọi-halo-aegis-core-là-gì)
 2. [Những Thứ "Độc Lạ & Cực Chiến" Trong HALO](#-những-thứ-độc-lạ--cực-chiến-trong-halo)
 3. [Bảng Đo Lường Hiệu Năng Thực Tế (Phần Cứng Thật, Không Fake)](#-bảng-đo-lường-hiệu-năng-thực-tế-phần-cứng-thật-không-fake)
 4. [Kiến Trúc Kỹ Thuật 5 Tầng Tinh Hoa](#-kiến-trúc-kỹ-thuật-5-tầng-tinh-hoa)
@@ -37,6 +41,16 @@
 
 1. **Phần cứng Robot & UAV nhúng siêu giới hạn** (Jetson Orin Nano, STM32H7, ARM Cortex-A76/M7, chip Apple Silicon M-Series) với ngân sách bộ nhớ Flash < 128 KB và RAM < 16 MB.
 2. **Hệ thống Mô phỏng Trò chơi Điện tử AAA & RTS Khổng Lồ** (Unreal Engine 5, Frostbite, Unity) đòi hỏi điều hướng cùng lúc 10.000 đơn vị lính hoặc tính toán đường bay xuyên lục địa $2.000\text{ km} \times 2.000\text{ km}$ mà khung hình không bao giờ bị rớt dưới 60/120 FPS.
+
+### 🏷️ Ý Nghĩa Tên Gọi: "H.A.L.O. Aegis Core" Là Gì?
+
+- **H.A.L.O.** (**H**ardware-**A**ccelerated **L**inear **O**perator — *Bộ Vận Hành Tuyến Tính Tăng Tốc Phần Cứng*):
+  - *Góc nhìn kỹ thuật*: Mọi phép toán tuyến tính nền tảng (chiếu tọa độ WGS84, quét tia DDA, mặt nạ bitwise SWAR, biến đổi khoảng cách Euclid) đều được ánh xạ trực tiếp thành các tập lệnh vi kiến trúc phần cứng 1 chu kỳ của CPU (`clz`, `ctz`, `csel`, SIMD NEON/AVX2).
+  - *Góc nhìn hình tượng*: "Halo" là vầng hào quang hộ mệnh che chở sinh mạng con người, đồng thời gợi nhớ thuật ngữ hàng không quân sự **HALO** (*High Altitude Low Opening* — nhảy dù chiến thuật từ tầng cao mở dù tầm thấp), tượng trưng cho khả năng xâm nhập siêu tốc, chính xác tuyệt đối vào tâm điểm vùng thảm họa cứu nạn.
+- **AEGIS** (Tiếng Hy Lạp: *αἰγίς*):
+  - Chiếc khiên thần bất hoại được rèn bởi thần Hephaestus và được mang bởi thần Zeus cùng nữ thần Athena trong thần thoại Hy Lạp, biểu tượng cho sự che chở bất khả xâm phạm. Trong hệ thống, Aegis đại diện cho **Hệ Thống Khiên Chủ Động (Active Protection System - APS)** 10 tầng liên tục phát hiện, dự báo quỹ đạo và né tránh các hiểm họa động (mảnh văng đạn đạo, drone lạ xâm nhập, nguồn phát xung EMP, đường dây điện cao thế).
+- **CORE** (*Lõi Trọng Tâm*):
+  - Trái tim bare-metal thuần túy, không runtime vtable, không ngoại lệ (no exceptions), không cấp phát bộ nhớ heap động, tối ưu hóa triệt để cho các hệ thống nhúng và thời gian thực khắt khe nhất.
 
 ---
 

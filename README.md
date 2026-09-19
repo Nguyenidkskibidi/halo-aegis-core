@@ -5,7 +5,10 @@
 > 🌐 **Language / Ngôn ngữ**: **English** | [Tiếng Việt (Toàn Diện)](README.vn.md)
 
 > "In autonomous flight and disaster rescue, a millisecond is the difference between survival and tragedy. H.A.L.O. acts as the mathematical accelerator ensuring the CPU never wastes a cycle calculating salvation."  
-> — **Architect: Nguyên**
+> — **Architect: Myself**
+
+> *"Cái thuật toán này ổn lắm, chắc vậy." (This algorithm is pretty solid, probably.)*  
+> — **Nobody, ever.**
 
 [![Hippocratic License HL3-CL-ECO-LAW-MIL-SUP-SV](https://img.shields.io/static/v1?label=Hippocratic%20License&message=HL3-CL-ECO-LAW-MIL-SUP-SV&labelColor=5e2751&color=bc8c3d)](https://firstdonoharm.dev/version/3/0/cl-eco-law-mil-sup-sv.html)
 [![Standard](https://img.shields.io/badge/C%2B%2B-20%2F23-blue.svg)](#)
@@ -21,6 +24,7 @@
 
 ## 📑 Table of Contents
 1. [Mission & Core Philosophy](#-mission--core-philosophy)
+   - [What's in a Name? (Etymology of H.A.L.O. Aegis Core)](#-whats-in-a-name-etymology-of-halo-aegis-core)
 2. [⚡ Wild & Unique Architectural Feats ("Things That Defy Limits")](#-wild--unique-architectural-feats-things-that-defy-limits)
 3. [📊 Verified Empirical Benchmark Gates (Real Hardware Telemetry)](#-verified-empirical-benchmark-gates-real-hardware-telemetry)
 4. [🧩 5-Pillar Architectural Deep-Dive](#-5-pillar-architectural-deep-dive)
@@ -39,6 +43,16 @@
 
 1. **Ultra-Constrained Embedded Robotics & UAV Flight Hardware** (Jetson Orin Nano, STM32H7, ARM Cortex-A76/M7, Apple Silicon M-Series) constrained by strict $< 128\text{ KB}$ Flash storage and $\le 16.00\text{ MB}$ RAM budgets.
 2. **Massive AAA Game Engines & Large-Scale RTS Simulators** (Unreal Engine 5, Frostbite, Unity) requiring simultaneous control over 10,000 active swarm agents or trans-continental $2,000\text{ km} \times 2,000\text{ km}$ routing without dropping below 60/120 FPS.
+
+### 🏷️ What's in a Name? (Etymology of H.A.L.O. Aegis Core)
+
+- **H.A.L.O.** (**H**ardware-**A**ccelerated **L**inear **O**perator):
+  - *Engineering Reality*: All fundamental operations (coordinate projections, raycast DDA stepping, SWAR bitwise masking, Euclidean distance transforms) map directly to single-cycle CPU hardware instructions (`clz`, `ctz`, `csel`, SIMD dot products).
+  - *Symbolic Meaning*: Evokes the celestial "Halo"—a protective ring of light safeguarding life—as well as the airborne tactical term **HALO** (*High Altitude Low Opening*), symbolizing rapid, pinpoint, emergency navigation into high-risk disaster environments.
+- **AEGIS** (Greek: *αἰγίς*):
+  - Named after the legendary impenetrable shield forged by Hephaestus and borne by Athena and Zeus in Greek mythology. In this engine, Aegis represents the **Active Protection System (APS)**—a real-time 10-layer omni-directional shield continuously tracking, predicting, and neutralizing dynamic hazards (ballistic fragments, rogue drones, RF/EMP jammers, high-voltage lines).
+- **CORE**:
+  - The bare-metal, zero-overhead, monotonic kernel that powers navigation without runtime heap allocations, vtables, or exceptions.
 
 ---
 
@@ -334,6 +348,12 @@ Tài liệu tiếng Việt đầy đủ 100% về mặt kỹ thuật, triết l�
 <summary><b>Bấm vào đây để xem tóm tắt tiếng Việt nhanh</b></summary>
 
 ### 🚁 H.A.L.O. Aegis Core (Tóm Tắt Tiếng Việt)
+> *"Cái thuật toán này ổn lắm, chắc vậy."* — **Không ai cả.**
+
+- **Ý nghĩa tên gọi**:
+  - **H.A.L.O.** (*Hardware-Accelerated Linear Operator*): Bộ vận hành tuyến tính tăng tốc phần cứng, ánh xạ thuật toán vào tập lệnh 1 chu kỳ vi kiến trúc (`clz`, `ctz`, `csel`, SIMD); đồng thời tượng trưng cho hào quang bảo vệ và kỹ thuật nhảy dù chiến thuật *High Altitude Low Opening* cứu hộ khẩn cấp.
+  - **AEGIS** (*αἰγίς*): Chiếc khiên thần bất hoại bảo vệ sinh mạng trong thần thoại Hy Lạp, đại diện cho hệ thống khiên chủ động 10 tầng triệt tiêu hiểm họa thời gian thực.
+  - **CORE**: Lõi tính toán bare-metal không runtime overhead, không cấp phát heap động.
 - **Quét tia phản xạ vi mô**: **$0.34\text{ ns}$** (Ánh sáng chỉ kịp đi được $10.2\text{ cm}$).
 - **Định tuyến True JPS+ 512x512**: **P99 = 417 ns**, P50 = 167 ns.
 - **Né chướng ngại vật động 500 UAV**: **0.00% va chạm** qua 5.000 chu kỳ, chu kỳ $0.45\ \mu\text{s}$.
