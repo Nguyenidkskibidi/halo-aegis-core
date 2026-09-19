@@ -40,6 +40,9 @@ GetDynamicWeightFP(int32_t startDist, int32_t h) noexcept {
 }
 
 [[nodiscard]] inline bool HasLineOfSight(const Grid &g, Vec2i p0, Vec2i p1) noexcept {
+  if (!g.InBounds(p0) || !g.InBounds(p1)) return false;
+  if (!g.IsWalkable(p0.x, p0.y) || !g.IsWalkable(p1.x, p1.y)) return false;
+
   int32_t dx = std::abs(p1.x - p0.x);
   int32_t dy = -std::abs(p1.y - p0.y);
   int32_t sx = (p0.x < p1.x) ? 1 : -1;
@@ -47,17 +50,32 @@ GetDynamicWeightFP(int32_t startDist, int32_t h) noexcept {
   int32_t err = dx + dy;
 
   while (true) {
-    if (!g.IsWalkable(g.ToIndex(p0))) return false;
     if (p0 == p1) break;
 
     int32_t e2 = 2 * err;
+    int32_t ox = p0.x;
+    int32_t oy = p0.y;
+    bool stepX = false;
+    bool stepY = false;
+
     if (e2 >= dy) {
       err += dy;
       p0.x += sx;
+      stepX = true;
     }
     if (e2 <= dx) {
       err += dx;
       p0.y += sy;
+      stepY = true;
+    }
+
+    if (!g.InBounds(p0) || !g.IsWalkable(p0.x, p0.y)) return false;
+
+    // Strict zero-corner-cutting rule: diagonal moves require orthogonal clearance
+    if (stepX && stepY) {
+      if (!g.IsWalkable(p0.x, oy) || !g.IsWalkable(ox, p0.y)) {
+        return false;
+      }
     }
   }
   return true;

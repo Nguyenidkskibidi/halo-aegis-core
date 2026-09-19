@@ -501,6 +501,38 @@ public:
     else return m_h;
   }
 
+  [[nodiscard]] HALO_INLINE bool HasClearance(int32_t x, int32_t y, int32_t radius) const noexcept {
+    if (!IsWalkable(x, y)) return false;
+    for (int32_t dy = -radius; dy <= radius; ++dy) {
+      for (int32_t dx = -radius; dx <= radius; ++dx) {
+        if (!IsWalkable(x + dx, y + dy)) return false;
+      }
+    }
+    return true;
+  }
+
+  [[nodiscard]] HALO_INLINE Vec2i SnapToNearestWalkable(Vec2i pt, int32_t maxRadius = 16) const noexcept {
+    if (IsWalkable(pt.x, pt.y)) return pt;
+    for (int32_t r = 1; r <= maxRadius; ++r) {
+      for (int32_t dy = -r; dy <= r; ++dy) {
+        for (int32_t dx = -r; dx <= r; ++dx) {
+          if (std::abs(dx) != r && std::abs(dy) != r) continue;
+          if (IsWalkable(pt.x + dx, pt.y + dy)) {
+            return {pt.x + dx, pt.y + dy};
+          }
+        }
+      }
+    }
+    return pt;
+  }
+
+  [[nodiscard]] HALO_INLINE bool CanTraverseDiagonal(Vec2i from, Vec2i to) const noexcept {
+    int32_t dx = to.x - from.x;
+    int32_t dy = to.y - from.y;
+    if (dx == 0 || dy == 0) return IsWalkable(to.x, to.y);
+    return IsWalkable(to.x, to.y) && IsWalkable(from.x + dx, from.y) && IsWalkable(from.x, from.y + dy);
+  }
+
   [[nodiscard]] inline const uint8_t *GetWalkBuffer() const noexcept { return m_walk; }
   [[nodiscard]] inline uint8_t *GetWalkBuffer() noexcept { return m_walk; }
 };
@@ -508,12 +540,32 @@ public:
 // Dynamic Grid alias for backward-compatible dynamic-size usage
 using Grid = GridT<0, 0>;
 
+enum class RoutingMode : uint8_t {
+  Turbo = 0,            // Sub-microsecond accelerated search (Weighted A* + JPS+)
+  StrictOptimal = 1,    // Mathematically proven admissible 8-way shortest path (h <= h*, w = 1.0, zero overestimation)
+  AnyAngleOptimal = 2,  // Continuous Euclidean shortest path (Theta* / Taut String Pulling SSFA, cuts corner artifacts)
+  ClearanceAware = 3    // Optimal path maintaining clearance from obstacles
+};
+
 struct PathResult {
   bool found = false;
   int32_t cost = 0;
   int32_t expanded = 0;
   int32_t len = 0;
   Vec2i route[Config::MAX_PATH_LEN];
+};
+
+struct ContinuousPathResult {
+  bool found = false;
+  float totalDistance = 0.0f;
+  int32_t len = 0;
+  Vec2f waypoints[Config::MAX_PATH_LEN];
+};
+
+struct DensePathResult {
+  bool found = false;
+  int32_t stepCount = 0;
+  Vec2i steps[Config::MAX_PATH_LEN * 4];
 };
 
 namespace Direction {

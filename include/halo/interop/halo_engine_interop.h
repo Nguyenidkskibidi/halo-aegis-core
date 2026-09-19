@@ -66,6 +66,9 @@ int32_t HaloIsObstacle(HaloEngineContext *ctx, int32_t x, int32_t y);
 // ============================================================================
 
 int32_t HaloQueryPath(HaloEngineContext *ctx, HaloIntPoint start, HaloIntPoint goal, HaloPathResult *outResult);
+int32_t HaloQueryPathOptimal(HaloEngineContext *ctx, HaloIntPoint start, HaloIntPoint goal, HaloPathResult *outResult);
+int32_t HaloQueryPathAnyAngle(HaloEngineContext *ctx, HaloIntPoint start, HaloIntPoint goal, HaloPathResult *outResult);
+int32_t HaloValidatePath(HaloEngineContext *ctx, const HaloPathResult *path);
 
 int32_t HaloQueryRaycast(HaloEngineContext *ctx, HaloVec2f start, HaloVec2f dir, float maxDist, float *outClearance);
 
@@ -143,6 +146,43 @@ inline int32_t HaloQueryPath(HaloEngineContext *ctx, HaloIntPoint start, HaloInt
     outResult->waypoints[i].y = res.route[i].y;
   }
   return res.found ? 1 : 0;
+}
+
+inline int32_t HaloQueryPathOptimal(HaloEngineContext *ctx, HaloIntPoint start, HaloIntPoint goal, HaloPathResult *outResult) {
+  if (!ctx || !outResult) return 0;
+
+  halo::PathResult res = ctx->engine.RouteGridOptimal(halo::Vec2i{start.x, start.y}, halo::Vec2i{goal.x, goal.y});
+  outResult->found = res.found ? 1 : 0;
+  outResult->count = res.len;
+  for (int32_t i = 0; i < res.len && i < 1024; ++i) {
+    outResult->waypoints[i].x = res.route[i].x;
+    outResult->waypoints[i].y = res.route[i].y;
+  }
+  return res.found ? 1 : 0;
+}
+
+inline int32_t HaloQueryPathAnyAngle(HaloEngineContext *ctx, HaloIntPoint start, HaloIntPoint goal, HaloPathResult *outResult) {
+  if (!ctx || !outResult) return 0;
+
+  halo::ContinuousPathResult res = ctx->engine.RouteGridAnyAngle(halo::Vec2i{start.x, start.y}, halo::Vec2i{goal.x, goal.y});
+  outResult->found = res.found ? 1 : 0;
+  outResult->count = res.len;
+  for (int32_t i = 0; i < res.len && i < 1024; ++i) {
+    outResult->waypoints[i].x = static_cast<int32_t>(res.waypoints[i].x + 0.5f);
+    outResult->waypoints[i].y = static_cast<int32_t>(res.waypoints[i].y + 0.5f);
+  }
+  return res.found ? 1 : 0;
+}
+
+inline int32_t HaloValidatePath(HaloEngineContext *ctx, const HaloPathResult *path) {
+  if (!ctx || !path || !path->found || path->count <= 0) return 0;
+  halo::PathResult p;
+  p.found = true;
+  p.len = std::min(path->count, 1024);
+  for (int32_t i = 0; i < p.len; ++i) {
+    p.route[i] = halo::Vec2i{path->waypoints[i].x, path->waypoints[i].y};
+  }
+  return ctx->engine.ValidatePathSafety(p) ? 1 : 0;
 }
 
 inline int32_t HaloQueryRaycast(HaloEngineContext *ctx, HaloVec2f start, HaloVec2f dir, float maxDist, float *outClearance) {

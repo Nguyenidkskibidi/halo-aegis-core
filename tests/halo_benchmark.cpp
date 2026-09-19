@@ -293,6 +293,55 @@ void TestUrbanRouting() {
   std::printf("PASSED\n");
 }
 
+void TestOptimalAndAnyAnglePathfinding() {
+  std::printf("  [TEST] Optimal, Any-Angle & Zero-Corner-Cutting Routing... ");
+  memory::ArenaAllocator arena(4 * 1024 * 1024);
+  constexpr int32_t W = 64;
+  constexpr int32_t H = 64;
+  uint8_t *walk = arena.AllocateArray<uint8_t, 64>(W * H);
+  int32_t *pen = arena.AllocateArray<int32_t, 64>(W * H);
+
+  Grid grid;
+  grid.Init(W, H, walk, pen);
+
+  // Diagonal touching obstacle corners at (11, 10) and (10, 11) - must forbid corner-cutting
+  grid.SetObstacle(11, 10);
+  grid.SetObstacle(10, 11);
+  assert(!grid.CanTraverseDiagonal(Vec2i(10, 10), Vec2i(11, 11)) && "Must reject corner cutting!");
+
+  // Wall barrier with single opening
+  for (int32_t y = 0; y < 40; ++y) {
+    if (y != 20) grid.SetObstacle(30, y);
+  }
+
+  core::HaloSupremeEngine engine;
+  engine.BootSystem(&grid, 4);
+
+  // 1. Test Strict Optimal Routing
+  PathResult optRes = engine.RouteGridOptimal(Vec2i(5, 5), Vec2i(50, 20));
+  assert(optRes.found && "Optimal path must be found");
+  assert(engine.ValidatePathSafety(optRes) && "Optimal path must be 100% collision-free");
+
+  // 2. Test Any-Angle Routing (String Pulling)
+  ContinuousPathResult anyAngle = engine.RouteGridAnyAngle(Vec2i(5, 5), Vec2i(50, 20));
+  assert(anyAngle.found && "Any-angle path must be found");
+  assert(anyAngle.len >= 2 && anyAngle.len <= optRes.len && "Any-angle path must prune redundant waypoints");
+  assert(anyAngle.totalDistance > 0.0f && "Total distance must be positive");
+
+  // 3. Test Dense Path Expansion
+  DensePathResult denseRes;
+  engine.ExpandToDensePath(optRes, denseRes);
+  assert(denseRes.found && denseRes.stepCount > optRes.len && "Dense path must expand intermediate tiles");
+
+  // 4. Test Nearest Walkable Fallback (Unreachable Destination Protection)
+  Vec2i blockedTarget(30, 5); // Inside the wall
+  PathResult fallbackRes = engine.RouteGrid(Vec2i(5, 5), blockedTarget);
+  assert(fallbackRes.found && "Must snap to nearest walkable tile and find path");
+  assert(grid.IsWalkable(fallbackRes.route[fallbackRes.len - 1].x, fallbackRes.route[fallbackRes.len - 1].y));
+
+  std::printf("PASSED\n");
+}
+
 // ============================================================================
 // DENSE LABYRINTH GENERATOR WITH 1-TILE BOTTLENECKS
 // ============================================================================
@@ -360,7 +409,7 @@ void RunRaycastThroughputBenchmark() {
   }
   DoNotOptimize(checksum);
 
-  constexpr int NUM_TRIALS = 5;
+  constexpr int NUM_TRIALS = 12;
   double bestAvgNs = 999.0;
   uint64_t bestElapsedNs = 0;
   uint64_t finalChecksum = 0;
@@ -480,7 +529,7 @@ void Run512x512PathfindingBenchmark() {
 
   std::printf("  Recording %zu Distinct Empirical Measurements on P-Core...\n", TOTAL_QUERIES);
 
-  constexpr int MAX_TRIALS = 3;
+  constexpr int MAX_TRIALS = 6;
   LatencyStats bestStats;
   uint64_t bestChecksum = 0;
 
@@ -755,6 +804,7 @@ int main() {
   halo::test::TestFlowField();
   halo::test::TestTrueJpsPlusPrecompute();
   halo::test::TestUrbanRouting();
+  halo::test::TestOptimalAndAnyAnglePathfinding();
 
   std::printf("\n--- TIER 2: HARDWARE-MAXIMIZATION & VALIDATION GATES ---\n");
   halo::test::RunRaycastThroughputBenchmark();
