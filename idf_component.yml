@@ -1,0 +1,15 @@
+version: "2.0.0"
+description: "Ultra-high-performance bare-metal pathfinding and dynamic collision avoidance engine for ESP32 microcontrollers"
+url: "https://github.com/Nguyenidkskibidi/halo-aegis-core"
+repository: "https://github.com/Nguyenidkskibidi/halo-aegis-core"
+documentation: "https://github.com/Nguyenidkskibidi/halo-aegis-core/blob/master/README.md"
+targets:
+  - esp32
+  - esp32s2
+  - esp32s3
+  - esp32c3
+  - esp32c6
+  - esp32h2
+  - esp32p4
+dependencies:
+  idf: ">=4.4"

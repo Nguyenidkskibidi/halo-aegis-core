@@ -151,6 +151,48 @@ A ---------------------------> B (Đường thẳng tuyệt đối ngoài đời
 - **Bộ tìm đường thông thường (ROS 2 Nav2 / Costmap)**: Tốn $15\text{ ms}$ CPU @ $15\text{ Watts} = \mathbf{0.225\text{ Joules / quyết định}}$ (làm nóng rực máy tính phụ, quạt hú inh ỏi, tụt pin drone nhanh chóng).
 - **H.A.L.O. Aegis Core**: Tốn $0.0005\text{ ms}$ CPU @ $1.5\text{ Watts} = \mathbf{0.00000075\text{ Joules / quyết định}}$ (**Tiết kiệm điện hơn 300.000 lần!**), giữ máy tính bay mát lạnh, kéo dài thời gian bay trên không cứu nạn!
 
+### 12. 🛸 Kiến Trúc Nhúng, FreeRTOS & Vi Điều Khiển ESP32 (Zero-Heap Bare-Metal)
+H.A.L.O. Aegis Core được thiết kế từ gốc rễ để chạy mượt mà trên **các vi điều khiển 32-bit cực kỳ khan hiếm tài nguyên**, bao gồm **ESP32** (Xtensa LX6 240MHz 2 lõi), **ESP32-S3** (Xtensa LX7 có tập lệnh vector), **ESP32-C3 / ESP32-C6** (lõi RISC-V 32-bit), **STM32F4/F7/H7** (ARM Cortex-M4/M7), và **RP2040 / RP2350** (Raspberry Pi Pico).
+
+#### Ngân Sách RAM Vi Điều Khiển & Cấu Hình Khuyến Nghị
+| Dòng Chip / Phần Cứng | Bộ Nhớ RAM Khả Dụng | Kích Thước Lưới | Dung Lượng Bộ Nhớ Tiêu Thụ | Cấp Phát Động (Heap) | Phương Thức Khởi Động |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **RP2040 / STM32F4** | 64 KB – 192 KB | $32 \times 32$ | **57.4 KB** | **0 bytes (Bộ đệm tĩnh BSS)** | `BootSystemWithBuffer` |
+| **ESP32 WROOM (SRAM Nội)** | 320 KB tổng (~200 KB DRAM trống) | $64 \times 64$ | **225.0 KB** | **0 bytes (Bộ đệm tĩnh BSS)** | `BootSystemWithBuffer` |
+| **ESP32-S3 / WROVER (PSRAM)** | 2 MB – 16 MB Octal PSRAM | $128 \times 128$ đến $512 \times 512$ | 1.8 MB – 13.0 MB | Tùy chọn pool PSRAM | `BootSystemWithBuffer` / `heap_caps` |
+| **Máy Tính Nhúng (Linux/ROS2)** | Không giới hạn (> 16 MB) | $512 \times 512$ / Toàn quốc | 9.94 MB tối đa | Monotonic khóa trang vật lý | `BootSystem` |
+
+#### Cơ Chế Zero-Heap Xác Thực Tuyệt Đối (`BootSystemWithBuffer`)
+Trên vi điều khiển nhúng chạy liên tục nhiều tháng, phân mảnh bộ nhớ (`malloc` / `free`) là nguyên nhân hàng đầu gây treo hệ thống. H.A.L.O. cho phép truyền mảng tĩnh lúc biên dịch để chạy toàn bộ hệ thống tìm đường:
+
+```cpp
+#include <halo/core/halo_supreme_core.h>
+
+// 1. Cấp phát tĩnh trong phân vùng BSS (Zero heap, không phân mảnh)
+alignas(64) static uint8_t s_navPool[64 * 1024];  // 64 KB bộ đệm
+alignas(64) static uint8_t s_walkable[32 * 32];
+alignas(64) static int32_t s_penalties[32 * 32];
+
+static halo::GridT<32, 32> s_grid;
+static halo::core::EmbeddedSupremeEngine32 s_engine;
+
+void setup() {
+  s_grid.Init(32, 32, s_walkable, s_penalties);
+  // Khởi động hoàn toàn trên buffer tĩnh - không cấp phát heap nào
+  s_engine.BootSystemWithBuffer(&s_grid, s_navPool, sizeof(s_navPool));
+}
+
+void loop() {
+  // Thực thi truy vấn cực nhanh chỉ ~160 nanogiây!
+  halo::PathResult res = s_engine.RouteGridOptimal({2, 2}, {30, 30});
+}
+```
+
+#### An Toàn Stack Trong FreeRTOS Task
+1. **Không bao giờ tạo struct engine trên stack của task**: Mặc định stack của một task FreeRTOS rất nhỏ ($4\text{ KB} - 8\text{ KB}$). Luôn khai báo `GridT` và `EmbeddedSupremeEngine` dạng tĩnh (`static`) hoặc cấp phát ngoài PSRAM.
+2. **Khung hàm (Stack Frame) $< 128\text{ bytes}$**: Các hàm truy vấn tìm đường (`RouteGrid`, `RouteGridOptimal`, `RaycastRow`) có kích thước stack cực nhỏ, để dành trọn vẹn stack cho ngắt phần cứng (ISR) và chuyển ngữ cảnh task.
+3. **Ghim lõi (Task Pinning) trên ESP32**: Chạy WiFi/Telemetry trên Core 0 và ghim task H.A.L.O. sang Core 1 qua `xTaskCreatePinnedToCore` để phản xạ bay đạt mức độ trễ xác thực gần như tuyệt đối.
+
 ---
 
 ## 📊 Bảng Đo Lường Hiệu Năng Thực Tế (Phần Cứng Thật, Không Fake)
@@ -159,14 +201,15 @@ Mọi phép đo được thực hiện độc lập trên lõi Apple Silicon ARM
 
 | Cổng Kiểm Thử (Gate) | Tác Vụ Thực Nghiệm | Ngưỡng Ép Buộc | Kết Quả Đo Đạc Thực Tế | Checksum Bảo Chứng Vi Kiến Trúc | Trạng Thái |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **Cổng 1: Raycast Throughput** | 100.000 phép quét tia SWAR liên tiếp | $< 0.35\text{ ns / op}$ | **0.3412 ns / op** (2.930 triệu tia/giây) | `Checksum: 1719356` | ✅ **ĐẠT CHUẨN** |
-| **Cổng 2: True JPS+ 512x512** | 2.000 truy vấn ngẫu nhiên trong mê cung dày | $\text{P99} < 500\text{ ns}$ | **P99: 417.0 ns** (P50: 167.0 ns, Min: 83.0 ns) | `Path Checksum: 473027213825` (Check 100% bước đi an toàn) | ✅ **ĐẠT CHUẨN** |
-| **Cổng 3: UAV Né 500 Vật Cản** | 5.000 chu kỳ bay kín né 500 drone động | **0 va chạm, chu kỳ < 1.0 µs** | **0 va chạm (0.00%)**, Chu kỳ: **0.452 µs** | `Khoảng cách: 582.1m, Evasion: 391.9ns` | ✅ **ĐẠT CHUẨN** |
-| **Cổng 4: Ma Trận 2048x2048** | 50.000 tia quét trên 10 lớp hiểm họa | Không tràn heap | **67.44 ns / tia** | `Checksum: 81249899` (8 MB Arena) | ✅ **ĐẠT CHUẨN** |
-| **Cổng 5: Đô Thị Skyscraper 30km** | Phản xạ né vật cản trong hẻm vực nhà cao tầng | $< 300\text{ ns / op}$ | **60.47 ns / op** | 1.024 chunk thưa, bộ nhớ 8.59 MB | ✅ **ĐẠT CHUẨN** |
-| **Cổng 6: Xuyên Đại Lục 2000km** | Tìm đường bay $> 2.900\text{ km}$ qua dãy núi | $< 40.0\ \mu\text{s}$ P99 | **P99: 5.29 µs** (Min: 4.17 µs, P50: 4.50 µs) | 51 waypoint, đường bay 2933.4 km | ✅ **ĐẠT CHUẨN** |
+| **Cổng 1: Raycast Throughput** | 100.000 phép quét tia SWAR liên tiếp | $< 0.35\text{ ns / op}$ | **0.3408 ns / op** (2.933,9 triệu tia/giây) | `Checksum: 1719356` | ✅ **ĐẠT CHUẨN** |
+| **Cổng 2: True JPS+ 512x512** | 2.000 truy vấn ngẫu nhiên trong mê cung dày | $\text{P99} < 500\text{ ns}$ | **P99: 375.0 ns** (P50: 208.0 ns, Min: 125.0 ns) | `Path Checksum: 473027213825` (Check 100% bước đi an toàn) | ✅ **ĐẠT CHUẨN** |
+| **Cổng 3: UAV Né 500 Vật Cản** | 5.000 chu kỳ bay kín né 500 drone động | **0 va chạm, chu kỳ < 1.0 µs** | **0 va chạm (0.00%)**, Chu kỳ: **0.485 µs** | `Khoảng cách: 582.1m, Evasion: 422.2ns` | ✅ **ĐẠT CHUẨN** |
+| **Cổng 4: Ma Trận 2048x2048** | 50.000 tia quét trên 10 lớp hiểm họa | Không tràn heap | **69.61 ns / tia** | `Checksum: 81249899` (8 MB Arena) | ✅ **ĐẠT CHUẨN** |
+| **Cổng 5: Đô Thị Skyscraper 30km** | Phản xạ né vật cản trong hẻm vực nhà cao tầng | $< 300\text{ ns / op}$ | **61.76 ns / op** | 1.024 chunk thưa, bộ nhớ 8.59 MB | ✅ **ĐẠT CHUẨN** |
+| **Cổng 6: Xuyên Đại Lục 2000km** | Tìm đường bay $> 2.900\text{ km}$ qua dãy núi | $< 40.0\ \mu\text{s}$ P99 | **P99: 22.88 µs** (Min: 4.12 µs, P50: 4.33 µs) | 51 waypoint, đường bay 2933.4 km | ✅ **ĐẠT CHUẨN** |
 | **Ngân Sách RAM Nhúng** | Tổng bộ nhớ đô thị + đại lục gộp chung | $\le 16.00\text{ MB}$ | **9.94 MB (10.420.464 B)** | Cấp phát 1 lần duy nhất, dư 6.06 MB | ✅ **ĐẠT CHUẨN** |
 | **Kích Thước File Nhị Phân** | File chạy thực thi Release Stripped | $< 40\text{ KB}$ | **34.304 bytes (~33.5 KB)** | Tiết kiệm 6.65 KB so với trần | ✅ **ĐẠT CHUẨN** |
+| **Cổng 7: Vi Điều Khiển Zero-Heap** | 10.000 truy vấn trên vùng đệm tĩnh 64 KB SRAM | 0 heap alloc, $< 1.0\ \mu\text{s}$ | **157.63 ns / truy vấn** (Dùng 57.4 KB) | `Checksum: 26071` (Không gọi malloc) | ✅ **ĐẠT CHUẨN** |
 | **An Toàn Bộ Nhớ Tuyệt Đối** | Toàn bộ suite dưới Clang ASan + UBSan | 0 Vi Phạm | **0 memory leaks, 0 UB, 0 crash** | Sạch bong 100% | ✅ **ĐẠT CHUẨN** |
 
 ---

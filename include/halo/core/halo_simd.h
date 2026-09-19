@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../utils/halo_types.h"
-#include <bit>
 #include <cstdint>
 
 #if defined(__ARM_NEON) || defined(__aarch64__)
@@ -134,15 +133,15 @@ Collapse16LayersToShadow_ARM64(const uint64_t *HALO_RESTRICT layers) noexcept {
 }
 
 [[nodiscard]] HALO_INLINE int32_t CountTrailingZeros64(uint64_t v) noexcept {
-  return v == 0 ? 64 : std::countr_zero(v);
+  return halo::bits::CountTrailingZeros(v);
 }
 
 [[nodiscard]] HALO_INLINE int32_t CountLeadingZeros64(uint64_t v) noexcept {
-  return v == 0 ? 64 : std::countl_zero(v);
+  return halo::bits::CountLeadingZeros(v);
 }
 
 [[nodiscard]] HALO_INLINE int32_t PopCount64(uint64_t v) noexcept {
-  return std::popcount(v);
+  return halo::bits::PopCount(v);
 }
 
 } // namespace halo::simd

@@ -54,6 +54,11 @@ Before writing a single line of code, please ensure your contribution honors the
 - The stripped embedded Release binary must strictly stay under **40,960 bytes (40 KB)**.
 - Compile with `-fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -flto` to allow dead-stripping of unused symbols.
 
+### 6. Strict Microcontroller & Bare-Metal Portability (Zero OS Header Pollution)
+- **NEVER** include desktop-only or POSIX headers (`<sys/mman.h>`, `<pthread.h>`, `<sched.h>`) without strict preprocessor guards (`#if !defined(ESP_PLATFORM) && !defined(ARDUINO)...`).
+- Code must compile seamlessly on 32-bit architectures (ESP32 Xtensa LX6/LX7, RISC-V 32, ARM Cortex-M) under both C++17 and C++20.
+- All algorithms must support deterministic static buffers (`BootSystemWithBuffer`) without relying on dynamic operating system page allocation.
+
 ---
 
 ## 🛠️ How You Can Help
@@ -69,7 +74,7 @@ You are invited to contribute in many meaningful ways:
 4. **Any-Angle Pathfinding & Kinematics**:
    - Improvements to SSFA string pulling, spline curvature constraints, or wind-field drift compensation.
 5. **Code Cleanup & Refactoring**:
-   - Found any confusing naming or messy logic? Clean and concise refactorings are warmly welcomed.
+   - Clean, readable, well-commented low-level C++ code is always appreciated.
 
 ---
 
@@ -81,17 +86,18 @@ You are invited to contribute in many meaningful ways:
    ```bash
    git checkout -b feature/my-awesome-optimization
    ```
-3. **Verify Locally Against the 5-Stage Gate**:
+3. **Verify Locally Against the 6-Stage Gate**:
    - Before submitting, run the full automated verification pipeline:
      ```bash
      ./scripts/build_and_verify.sh
      ```
-   - **Must pass 100%**:
+   - **Must pass 100% across all 6 stages**:
      - Stage 1: ASan & UBSan clean (0 memory leaks, 0 undefined behaviors).
-     - Stage 2: Stripped binary size $< 40\text{ KB}$.
+     - Stage 2: Stripped binary size $< 40\text{ KB}$ ($34,304\text{ bytes}$).
      - Stage 3: Dynamic drone flight simulation (0.00% collisions across 5,000 cycles).
      - Stage 4: Hardware maximization suite ($< 0.35\text{ ns}$ raycast, P99 $< 500\text{ ns}$ JPS+).
      - Stage 5: Universal spatial benchmark (total RAM $\le 16.00\text{ MB}$).
+     - Stage 6: Embedded & ESP32 Zero-Heap verification (100% deterministic on 64 KB SRAM).
 4. **Submit Your PR**:
    - Provide a clear summary of what you changed, why you changed it, and include benchmark comparisons.
 5. **Wait for Review**:

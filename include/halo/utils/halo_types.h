@@ -1,11 +1,17 @@
 #pragma once
 
 #include <algorithm>
-#include <bit>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+
+#if defined(__has_include)
+  #if __has_include(<bit>) && __cplusplus >= 202002L
+    #include <bit>
+    #define HALO_HAS_STD_BIT 1
+  #endif
+#endif
 
 #if defined(_MSC_VER)
 #include <intrin.h>
@@ -42,13 +48,77 @@
 
 namespace halo {
 
+namespace bits {
+
+[[nodiscard]] HALO_INLINE int32_t PopCount(uint64_t v) noexcept {
+#if defined(HALO_HAS_STD_BIT) && defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+  return std::popcount(v);
+#elif defined(_MSC_VER)
+  return static_cast<int32_t>(__popcnt64(v));
+#elif defined(__GNUC__) || defined(__clang__)
+  return __builtin_popcountll(v);
+#else
+  v = v - ((v >> 1) & 0x5555555555555555ULL);
+  v = (v & 0x3333333333333333ULL) + ((v >> 2) & 0x3333333333333333ULL);
+  return static_cast<int32_t>((((v + (v >> 4)) & 0xF0F0F0F0F0F0F0FULL) * 0x101010101010101ULL) >> 56);
+#endif
+}
+
+[[nodiscard]] HALO_INLINE int32_t CountTrailingZeros(uint64_t v) noexcept {
+#if defined(HALO_HAS_STD_BIT) && defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+  return v == 0 ? 64 : std::countr_zero(v);
+#elif defined(_MSC_VER)
+  unsigned long index;
+  return _BitScanForward64(&index, v) ? static_cast<int32_t>(index) : 64;
+#elif defined(__GNUC__) || defined(__clang__)
+  return v == 0 ? 64 : __builtin_ctzll(v);
+#else
+  if (v == 0) return 64;
+  int32_t c = 0;
+  while ((v & 1) == 0) { v >>= 1; ++c; }
+  return c;
+#endif
+}
+
+[[nodiscard]] HALO_INLINE int32_t CountLeadingZeros(uint64_t v) noexcept {
+#if defined(HALO_HAS_STD_BIT) && defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
+  return v == 0 ? 64 : std::countl_zero(v);
+#elif defined(_MSC_VER)
+  unsigned long index;
+  return _BitScanReverse64(&index, v) ? static_cast<int32_t>(63 - index) : 64;
+#elif defined(__GNUC__) || defined(__clang__)
+  return v == 0 ? 64 : __builtin_clzll(v);
+#else
+  if (v == 0) return 64;
+  int32_t c = 0;
+  while ((v & (1ULL << 63)) == 0) { v <<= 1; ++c; }
+  return c;
+#endif
+}
+
+} // namespace bits
+
 // Compile-Time Microarchitectural Geometry Helpers
 constexpr bool IsPowerOfTwo(uint32_t n) noexcept {
   return n > 0 && (n & (n - 1)) == 0;
 }
 
 constexpr int32_t Log2Constexpr(uint32_t n) noexcept {
+#if defined(HALO_HAS_STD_BIT) && defined(__cpp_lib_bitops) && __cpp_lib_bitops >= 201907L
   return std::countr_zero(n);
+#elif defined(_MSC_VER)
+  unsigned long index;
+  return _BitScanForward(&index, n) ? static_cast<int32_t>(index) : 32;
+#elif defined(__GNUC__) || defined(__clang__)
+  return n == 0 ? 32 : __builtin_ctz(n);
+#else
+  int32_t count = 0;
+  while ((n & 1) == 0 && n != 0) {
+    n >>= 1;
+    ++count;
+  }
+  return count;
+#endif
 }
 
 struct Config {

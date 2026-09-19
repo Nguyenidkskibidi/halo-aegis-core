@@ -1,7 +1,6 @@
 #pragma once
 
 #include "halo_simd.h"
-#include <bit>
 #include <cstdint>
 #include <cstring>
 
@@ -12,7 +11,7 @@ inline constexpr int32_t HALO_WORD_BITS = 64;
 inline constexpr NativeWord HALO_ALL_ONES = 0xFFFFFFFFFFFFFFFFULL;
 
 [[nodiscard]] HALO_INLINE int32_t HardwareBitScanForward(NativeWord v) noexcept {
-  return v == 0 ? HALO_WORD_BITS : std::countr_zero(v);
+  return v == 0 ? HALO_WORD_BITS : halo::bits::CountTrailingZeros(v);
 }
 
 class alignas(64) AdaptiveOmniEngine {
@@ -65,7 +64,7 @@ public:
   [[nodiscard]] HALO_INLINE static int32_t RaycastRow(NativeWord compositeRow, int32_t startX) noexcept {
     const NativeWord startMask = HALO_ALL_ONES << (startX & 63);
     const NativeWord composite = compositeRow & startMask;
-    const int32_t tz = std::countr_zero(composite);
+    const int32_t tz = halo::bits::CountTrailingZeros(composite);
     return tz == 64 ? (MAP_SIZE - 1) : tz;
   }
 

@@ -52,14 +52,8 @@ private:
     }
   }
 
-public:
-  HaloSupremeEngineT() noexcept = default;
-
-  [[nodiscard]] size_t GetMasterArenaCapacity() const noexcept { return m_masterArena.GetCapacity(); }
-  [[nodiscard]] size_t GetMasterArenaOffset() const noexcept { return m_masterArena.GetOffset(); }
-
-  [[gnu::noinline]] [[gnu::cold]] void BootSystem(GridT<W, H> *grid, size_t megaBytesRAM) {
-    m_masterArena.Init(megaBytesRAM * 1024 * 1024);
+private:
+  void InitGridAndEngine(GridT<W, H> *grid) noexcept {
     m_grid = grid;
     if (m_grid) {
       int32_t gridTot = m_grid->Size();
@@ -72,8 +66,38 @@ public:
     }
   }
 
+public:
+  HaloSupremeEngineT() noexcept = default;
+
+  [[nodiscard]] size_t GetMasterArenaCapacity() const noexcept { return m_masterArena.GetCapacity(); }
+  [[nodiscard]] size_t GetMasterArenaOffset() const noexcept { return m_masterArena.GetOffset(); }
+
+  // Precision byte-level boot for memory-constrained MCUs (e.g. 64 KB, 128 KB on ESP32 SRAM)
+  [[gnu::noinline]] [[gnu::cold]] void BootSystemBytes(GridT<W, H> *grid, size_t bytesRAM) {
+    m_masterArena.Init(bytesRAM);
+    InitGridAndEngine(grid);
+  }
+
+  // Pure Zero-Heap deterministic boot: user supplies static BSS memory pool or external PSRAM buffer
+  [[gnu::noinline]] [[gnu::cold]] void BootSystemWithBuffer(GridT<W, H> *grid, void *buffer, size_t bufferSize) noexcept {
+    m_masterArena.InitWithBuffer(buffer, bufferSize);
+    InitGridAndEngine(grid);
+  }
+
+  [[gnu::noinline]] [[gnu::cold]] void BootSystem(GridT<W, H> *grid, size_t megaBytesRAM) {
+    BootSystemBytes(grid, megaBytesRAM * 1024 * 1024);
+  }
+
   [[gnu::noinline]] [[gnu::cold]] void BootSystem(GridT<W, H> *grid, urban::CityMap *cityMap, size_t megaBytesRAM) {
     BootSystem(grid, megaBytesRAM);
+    m_cityMap = cityMap;
+    if (m_cityMap) {
+      m_apspRouter.Precompute(*m_cityMap, m_masterArena);
+    }
+  }
+
+  [[gnu::noinline]] [[gnu::cold]] void BootSystemWithBuffer(GridT<W, H> *grid, urban::CityMap *cityMap, void *buffer, size_t bufferSize) noexcept {
+    BootSystemWithBuffer(grid, buffer, bufferSize);
     m_cityMap = cityMap;
     if (m_cityMap) {
       m_apspRouter.Precompute(*m_cityMap, m_masterArena);
@@ -339,5 +363,12 @@ private:
 };
 
 using HaloSupremeEngine = HaloSupremeEngineT<0, 0>;
+
+// Microcontroller Presets (ESP32 SRAM / FreeRTOS friendly)
+template <int32_t Dim = 64>
+using EmbeddedSupremeEngine = HaloSupremeEngineT<Dim, Dim>;
+using EmbeddedSupremeEngine32 = HaloSupremeEngineT<32, 32>;
+using EmbeddedSupremeEngine64 = HaloSupremeEngineT<64, 64>;
+using EmbeddedSupremeEngine128 = HaloSupremeEngineT<128, 128>;
 
 } // namespace halo::core

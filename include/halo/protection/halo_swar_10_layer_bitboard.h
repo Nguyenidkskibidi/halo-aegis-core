@@ -3,7 +3,6 @@
 #include "../core/halo_memory.h"
 #include "../core/halo_simd.h"
 #include "../utils/halo_types.h"
-#include <bit>
 #include <cassert>
 #include <cstdint>
 #include <cstring>
@@ -120,7 +119,7 @@ public:
     const uint64_t row = GetCompositeRow(y);
     const uint64_t mask = (x < 63) ? (~0ULL << (x + 1)) : 0ULL;
     const uint64_t forward = row & mask;
-    return forward == 0 ? (m_w - 1) : std::countr_zero(forward);
+    return forward == 0 ? (m_w - 1) : halo::bits::CountTrailingZeros(forward);
   }
 
   [[nodiscard]] HALO_INLINE int32_t RaycastWest(int32_t x, int32_t y) const noexcept {
@@ -128,7 +127,7 @@ public:
     const uint64_t row = GetCompositeRow(y);
     const uint64_t mask = (x > 0) ? ((1ULL << (x < 64 ? x : 63)) - 1ULL) : 0ULL;
     const uint64_t backward = row & mask;
-    return backward == 0 ? 0 : 63 - std::countl_zero(backward);
+    return backward == 0 ? 0 : 63 - halo::bits::CountLeadingZeros(backward);
   }
 
   [[nodiscard]] HALO_INLINE int32_t RaycastSouth(int32_t x, int32_t y) const noexcept {
@@ -136,7 +135,7 @@ public:
     const uint64_t col = GetCompositeCol(x);
     const uint64_t mask = (y < 63) ? (~0ULL << (y + 1)) : 0ULL;
     const uint64_t forward = col & mask;
-    return forward == 0 ? (m_h - 1) : std::countr_zero(forward);
+    return forward == 0 ? (m_h - 1) : halo::bits::CountTrailingZeros(forward);
   }
 
   [[nodiscard]] HALO_INLINE int32_t RaycastNorth(int32_t x, int32_t y) const noexcept {
@@ -144,7 +143,7 @@ public:
     const uint64_t col = GetCompositeCol(x);
     const uint64_t mask = (y > 0) ? ((1ULL << (y < 64 ? y : 63)) - 1ULL) : 0ULL;
     const uint64_t backward = col & mask;
-    return backward == 0 ? 0 : 63 - std::countl_zero(backward);
+    return backward == 0 ? 0 : 63 - halo::bits::CountLeadingZeros(backward);
   }
 
   [[nodiscard]] inline int32_t Width() const noexcept { return m_w; }
@@ -294,14 +293,14 @@ public:
     composite &= mask;
 
     if (composite != 0) {
-      int32_t hitX = (startWord << 6) + std::countr_zero(composite);
+      int32_t hitX = (startWord << 6) + halo::bits::CountTrailingZeros(composite);
       return hitX < m_w ? hitX : m_w - 1;
     }
 
     for (int32_t w = startWord + 1; w < m_wordsPerRow; ++w) {
       composite = GetCompositeWord(y, w);
       if (composite != 0) {
-        int32_t hitX = (w << 6) + std::countr_zero(composite);
+        int32_t hitX = (w << 6) + halo::bits::CountTrailingZeros(composite);
         return hitX < m_w ? hitX : m_w - 1;
       }
     }
@@ -320,13 +319,13 @@ public:
     composite &= mask;
 
     if (composite != 0) {
-      return (startWord << 6) + (63 - std::countl_zero(composite));
+      return (startWord << 6) + (63 - halo::bits::CountLeadingZeros(composite));
     }
 
     for (int32_t w = startWord - 1; w >= 0; --w) {
       composite = GetCompositeWord(y, w);
       if (composite != 0) {
-        return (w << 6) + (63 - std::countl_zero(composite));
+        return (w << 6) + (63 - halo::bits::CountLeadingZeros(composite));
       }
     }
     return 0;

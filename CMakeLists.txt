@@ -14,9 +14,17 @@ target_include_directories(halo_aegis_core INTERFACE
 
 # Common Compiler & Linker Options for High Performance
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang|AppleClang|GNU")
+  # Host architecture flag: only apply -march=native when not cross-compiling for embedded targets
+  set(HALO_ARCH_FLAGS "")
+  if (NOT CMAKE_CROSSCOMPILING AND NOT HALO_TARGET_ESP32)
+    if (CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|AMD64|arm64|aarch64")
+      set(HALO_ARCH_FLAGS "-march=native")
+    endif()
+  endif()
+
   target_compile_options(halo_aegis_core INTERFACE
     -Wall -Wextra -Wpedantic
-    $<$<CONFIG:Release>:-O3 -march=native -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions>
+    $<$<CONFIG:Release>:-O3 ${HALO_ARCH_FLAGS} -ffunction-sections -fdata-sections -fno-rtti -fno-exceptions>
   )
   if (APPLE)
     target_link_options(halo_aegis_core INTERFACE
@@ -45,6 +53,9 @@ if (HALO_BUILD_BENCHMARKS)
 
   add_executable(halo_universal_spatial_benchmark tests/halo_universal_spatial_benchmark.cpp)
   target_link_libraries(halo_universal_spatial_benchmark PRIVATE halo_aegis_core)
+
+  add_executable(halo_embedded_test tests/halo_embedded_test.cpp)
+  target_link_libraries(halo_embedded_test PRIVATE halo_aegis_core)
 endif()
 
 if (HALO_BUILD_EXAMPLES)

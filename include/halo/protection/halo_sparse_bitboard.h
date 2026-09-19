@@ -3,7 +3,6 @@
 #include "../core/halo_memory.h"
 #include "../core/halo_simd.h"
 #include "../utils/halo_types.h"
-#include <bit>
 #include <cassert>
 #include <cstdint>
 #include <cstring>
@@ -80,7 +79,7 @@ public:
     uint64_t mask = (startX >= 63) ? 0ULL : (~0ULL << (startX + 1));
     uint64_t obstacles = row & mask;
     if (obstacles == 0) return 63;
-    return std::countr_zero(obstacles);
+    return halo::bits::CountTrailingZeros(obstacles);
   }
 
   // Fast Intra-Chunk West Raycast using Bitwise Leading Zero Count
@@ -90,7 +89,7 @@ public:
     uint64_t mask = (startX <= 0) ? 0ULL : (~0ULL >> (64 - startX));
     uint64_t obstacles = row & mask;
     if (obstacles == 0) return 0;
-    return 63 - std::countl_zero(obstacles);
+    return 63 - halo::bits::CountLeadingZeros(obstacles);
   }
 };
 

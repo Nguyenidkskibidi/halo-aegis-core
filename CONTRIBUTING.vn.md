@@ -54,6 +54,11 @@ Trước khi viết bất kỳ dòng mã nào, vui lòng đảm bảo rằng gi�
 - File thực thi nhúng sau khi `strip` symbol bắt buộc phải nằm dưới ngưỡng trần cứng **40,960 bytes (40 KB)**.
 - Biên dịch ở cờ `-fno-rtti -fno-exceptions -ffunction-sections -fdata-sections -flto` để loại bỏ các hàm và symbol không dùng đến.
 
+### 6. Khả Năng Tương Thích Tuyệt Đối Trên Vi Điều Khiển Nhúng (Zero OS Pollution)
+- **CẤM** include trực tiếp các header của hệ điều hành máy tính (`<sys/mman.h>`, `<pthread.h>`, `<sched.h>`) mà không bọc trong cờ kiểm tra nền tảng (`#if !defined(ESP_PLATFORM) && !defined(ARDUINO)...`).
+- Mã nguồn phải biên dịch mượt mà trên kiến trúc 32-bit (ESP32 Xtensa LX6/LX7, RISC-V 32, ARM Cortex-M) ở cả chuẩn C++17 và C++20.
+- Mọi thuật toán phải hỗ trợ cơ chế vùng đệm tĩnh xác thực (`BootSystemWithBuffer`) để vi điều khiển không bao giờ phải dựa vào phân trang bộ nhớ ảo của hệ điều hành.
+
 ---
 
 ## 🛠️ Bạn Có Thể Đóng Góp Như Thế Nào?
@@ -81,17 +86,18 @@ Bạn có thể tham gia đóng góp bằng rất nhiều cách ý nghĩa:
    ```bash
    git checkout -b feature/toi-uu-cuc-chien
    ```
-3. **Chạy Kiểm Thử Độc Lập 5 Giai Đoạn**:
+3. **Chạy Kiểm Thử Độc Lập 6 Giai Đoạn**:
    - Trước khi gửi PR, hãy chạy toàn bộ pipeline kiểm định:
      ```bash
      ./scripts/build_and_verify.sh
      ```
-   - **Tất cả 5 giai đoạn phải đạt chuẩn 100%**:
+   - **Tất cả 6 giai đoạn phải đạt chuẩn 100%**:
      - Giai đoạn 1: ASan & UBSan sạch bong (0 rò rỉ bộ nhớ, 0 hành vi bất định).
      - Giai đoạn 2: Kích thước file nhị phân stripped $< 40\text{ KB}$.
      - Giai đoạn 3: Mô phỏng bay né 500 vật cản đạt đúng 0.00% va chạm qua 5.000 chu kỳ.
      - Giai đoạn 4: Cổng kiểm thử vi kiến trúc ($< 0.35\text{ ns}$ raycast, P99 $< 500\text{ ns}$ JPS+).
      - Giai đoạn 5: Định tuyến không gian đô thị & đại lục với tổng RAM $\le 16.00\text{ MB}$.
+     - Giai đoạn 6: Kiểm thử vi điều khiển & ESP32 Zero-Heap tĩnh (100% xác thực trên 64 KB SRAM).
 4. **Gửi Pull Request**:
    - Mô tả ngắn gọn, súc tích điều bạn đã thay đổi, lý do thay đổi và số liệu đo đạc so sánh trước/sau.
 5. **Chờ Phản Hồi Review**:
