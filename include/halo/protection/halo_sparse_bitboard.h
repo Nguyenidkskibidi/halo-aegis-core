@@ -62,9 +62,7 @@ public:
     return (shadowRows[ly] & (1ULL << lx)) != 0;
   }
 
-  HALO_INLINE void RecomputeShadowRow(int32_t ly) noexcept {
-    shadowRows[ly] = simd::Collapse10LayersToShadow(layers[ly]);
-  }
+  HALO_INLINE void RecomputeShadowRow(int32_t ly) noexcept { shadowRows[ly] = simd::Collapse10LayersToShadow(layers[ly]); }
 
   void RecomputeAllShadows() noexcept {
     for (int32_t y = 0; y < CHUNK_DIM; ++y) {
@@ -104,8 +102,8 @@ public:
   static constexpr uint32_t EMPTY_INDEX = 0xFFFFFFFF;
 
   struct alignas(8) ChunkSlot {
-    uint32_t packedCoord = EMPTY_SLOT; // (cx & 0xFFFF) | ((cy & 0xFFFF) << 16)
-    uint32_t chunkIndex = EMPTY_INDEX; // Index into pre-allocated pool
+    uint32_t packedCoord = EMPTY_SLOT;  // (cx & 0xFFFF) | ((cy & 0xFFFF) << 16)
+    uint32_t chunkIndex = EMPTY_INDEX;  // Index into pre-allocated pool
   };
 
 private:
@@ -115,14 +113,12 @@ private:
   uint32_t m_size = 0;
 
   static constexpr uint32_t Pack(int32_t cx, int32_t cy) noexcept {
-    return (static_cast<uint32_t>(cx) & 0xFFFFu) |
-           ((static_cast<uint32_t>(cy) & 0xFFFFu) << 16);
+    return (static_cast<uint32_t>(cx) & 0xFFFFu) | ((static_cast<uint32_t>(cy) & 0xFFFFu) << 16);
   }
 
   // Universal Spatial Hash Function
   static constexpr uint32_t HashCoords(int32_t cx, int32_t cy) noexcept {
-    uint32_t h = (static_cast<uint32_t>(cx) * 73856093u) ^
-                 (static_cast<uint32_t>(cy) * 19349663u);
+    uint32_t h = (static_cast<uint32_t>(cx) * 73856093u) ^ (static_cast<uint32_t>(cy) * 19349663u);
     h ^= h >> 16;
     h *= 0x85ebca6bu;
     h ^= h >> 13;
@@ -156,7 +152,7 @@ public:
 
   // O(1) Linear Probing Insertion
   bool Insert(int32_t cx, int32_t cy, uint32_t chunkIdx) noexcept {
-    if (m_size >= (m_capacity * 7) / 10) return false; // 70% max load factor
+    if (m_size >= (m_capacity * 7) / 10) return false;  // 70% max load factor
 
     uint32_t packed = Pack(cx, cy);
     uint32_t idx = HashCoords(cx, cy) & m_mask;
@@ -170,7 +166,7 @@ public:
         return true;
       }
       if (m_slots[slot].packedCoord == packed) {
-        m_slots[slot].chunkIndex = chunkIdx; // Replace
+        m_slots[slot].chunkIndex = chunkIdx;  // Replace
         return true;
       }
     }
@@ -190,7 +186,7 @@ public:
         return m_slots[slot].chunkIndex;
       }
       if (m_slots[slot].packedCoord == EMPTY_SLOT) {
-        return EMPTY_INDEX; // Empty sentinel reached
+        return EMPTY_INDEX;  // Empty sentinel reached
       }
     }
     return EMPTY_INDEX;
@@ -217,9 +213,7 @@ private:
   int32_t m_originWorldY = 0;
 
 public:
-  RollingToroidalClipmap128() noexcept {
-    Clear();
-  }
+  RollingToroidalClipmap128() noexcept { Clear(); }
 
   void Clear() noexcept {
     std::memset(m_rows, 0, sizeof(m_rows));
@@ -275,7 +269,7 @@ public:
 
 class alignas(64) SparseBitboardWorld {
 public:
-  static constexpr int32_t MAX_CHUNKS = 1024; // 1024 * 8.5 KB = ~8.7 MB pool
+  static constexpr int32_t MAX_CHUNKS = 1024;  // 1024 * 8.5 KB = ~8.7 MB pool
   static constexpr uint32_t HASH_CAPACITY = 4096;
 
 private:
@@ -315,7 +309,7 @@ public:
       return &m_chunkPool[idx];
     }
     if (m_chunkCount >= MAX_CHUNKS) {
-      return nullptr; // Pool exhausted
+      return nullptr;  // Pool exhausted
     }
 
     uint32_t newIdx = m_chunkCount++;
@@ -356,19 +350,15 @@ public:
     SetBitWorld(static_cast<int32_t>(layer), worldX, worldY);
   }
 
-  HALO_INLINE void SetBit(int32_t layer, int32_t worldX, int32_t worldY) noexcept {
-    SetBitWorld(layer, worldX, worldY);
-  }
+  HALO_INLINE void SetBit(int32_t layer, int32_t worldX, int32_t worldY) noexcept { SetBitWorld(layer, worldX, worldY); }
 
-  [[nodiscard]] HALO_INLINE bool IsBlocked(int32_t worldX, int32_t worldY) const noexcept {
-    return IsBlockedWorld(worldX, worldY);
-  }
+  [[nodiscard]] HALO_INLINE bool IsBlocked(int32_t worldX, int32_t worldY) const noexcept { return IsBlockedWorld(worldX, worldY); }
 
   [[nodiscard]] HALO_INLINE bool IsBlockedWorld(int32_t worldX, int32_t worldY) const noexcept {
     int32_t cx = (worldX >= 0) ? (worldX / 64) : ((worldX - 63) / 64);
     int32_t cy = (worldY >= 0) ? (worldY / 64) : ((worldY - 63) / 64);
     SparseChunk *chunk = GetChunk(cx, cy);
-    if (!chunk) return false; // Empty space is 100% traversable!
+    if (!chunk) return false;  // Empty space is 100% traversable!
     int32_t lx = worldX - (cx * 64);
     int32_t ly = worldY - (cy * 64);
     return chunk->IsBlocked(lx, ly);
@@ -402,14 +392,14 @@ public:
         if (hitLocalX < 63 && hitLocalX > lx) {
           int32_t hitDist = hitLocalX - lx;
           if (hitDist <= remaining) {
-            return currentX + hitDist; // Impact detected!
+            return currentX + hitDist;  // Impact detected!
           }
         }
         currentX += stepSpan;
         remaining -= stepSpan;
       }
     }
-    return startX + maxDist; // Unobstructed ray
+    return startX + maxDist;  // Unobstructed ray
   }
 
   [[nodiscard]] int32_t CrossChunkRaycastWest(int32_t startX, int32_t startY, int32_t maxDist) const noexcept {
@@ -446,4 +436,4 @@ public:
   }
 };
 
-} // namespace halo::sparse
+}  // namespace halo::sparse

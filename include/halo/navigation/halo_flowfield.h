@@ -116,8 +116,7 @@ public:
           int32_t nIdx = ny * m_w + nx;
           if (m_integrationField[nIdx] < lowestCost) {
             lowestCost = m_integrationField[nIdx];
-            bestDir = Vec2f{static_cast<float>(Direction::Offsets[i].x),
-                            static_cast<float>(Direction::Offsets[i].y)};
+            bestDir = Vec2f{static_cast<float>(Direction::Offsets[i].x), static_cast<float>(Direction::Offsets[i].y)};
           }
         }
         m_vectorField[idx] = bestDir.Normalized();
@@ -181,8 +180,7 @@ public:
       for (int32_t i = 0; i < 8; ++i) {
         Vec2i nextPos = Vec2i(currX, currY) + Direction::Offsets[i];
 
-        if (nextPos.x < 0 || nextPos.x >= GRID_SIZE ||
-            nextPos.y < 0 || nextPos.y >= GRID_SIZE) {
+        if (nextPos.x < 0 || nextPos.x >= GRID_SIZE || nextPos.y < 0 || nextPos.y >= GRID_SIZE) {
           continue;
         }
 
@@ -233,8 +231,7 @@ public:
     int32_t gy = static_cast<int32_t>(pos.y + 0.5f);
     int8_t dir = GetDirectionForAgent(gx, gy);
     if (dir < 0 || dir >= 8) return Vec2f{0.0f, 0.0f};
-    return Vec2f{static_cast<float>(Direction::Offsets[dir].x),
-                 static_cast<float>(Direction::Offsets[dir].y)}.Normalized();
+    return Vec2f{static_cast<float>(Direction::Offsets[dir].x), static_cast<float>(Direction::Offsets[dir].y)}.Normalized();
   }
 };
 
@@ -242,13 +239,7 @@ public:
 // 2. RTS TACTICAL FORMATIONS & BOIDS SWARM (10,000 UNITS)
 // ============================================================================
 
-enum class FormationType : uint8_t {
-  BOX = 0,
-  WEDGE = 1,
-  LINE = 2,
-  ECHELON = 3,
-  COLUMN = 4
-};
+enum class FormationType : uint8_t { BOX = 0, WEDGE = 1, LINE = 2, ECHELON = 3, COLUMN = 4 };
 
 struct FormationSlot {
   Vec2f localOffset{0.0f, 0.0f};
@@ -257,30 +248,30 @@ struct FormationSlot {
 class TacticalFormation {
 public:
   static Vec2f ComputeSlotOffset(FormationType type, int32_t slotIdx, float spacing = 1.5f) noexcept {
-    if (slotIdx == 0) return Vec2f{0.0f, 0.0f}; // Leader slot
+    if (slotIdx == 0) return Vec2f{0.0f, 0.0f};  // Leader slot
 
     switch (type) {
-    case FormationType::BOX: {
-      int32_t row = slotIdx / 5;
-      int32_t col = slotIdx % 5;
-      return Vec2f{(static_cast<float>(col) - 2.0f) * spacing, -static_cast<float>(row) * spacing};
-    }
-    case FormationType::WEDGE: {
-      int32_t side = (slotIdx % 2 == 1) ? 1 : -1;
-      int32_t rank = (slotIdx + 1) / 2;
-      return Vec2f{static_cast<float>(side * rank) * spacing, -static_cast<float>(rank) * spacing};
-    }
-    case FormationType::LINE: {
-      int32_t side = (slotIdx % 2 == 1) ? 1 : -1;
-      int32_t rank = (slotIdx + 1) / 2;
-      return Vec2f{static_cast<float>(side * rank) * spacing, 0.0f};
-    }
-    case FormationType::ECHELON: {
-      return Vec2f{static_cast<float>(slotIdx) * spacing, -static_cast<float>(slotIdx) * spacing};
-    }
-    case FormationType::COLUMN: {
-      return Vec2f{0.0f, -static_cast<float>(slotIdx) * spacing};
-    }
+      case FormationType::BOX: {
+        int32_t row = slotIdx / 5;
+        int32_t col = slotIdx % 5;
+        return Vec2f{(static_cast<float>(col) - 2.0f) * spacing, -static_cast<float>(row) * spacing};
+      }
+      case FormationType::WEDGE: {
+        int32_t side = (slotIdx % 2 == 1) ? 1 : -1;
+        int32_t rank = (slotIdx + 1) / 2;
+        return Vec2f{static_cast<float>(side * rank) * spacing, -static_cast<float>(rank) * spacing};
+      }
+      case FormationType::LINE: {
+        int32_t side = (slotIdx % 2 == 1) ? 1 : -1;
+        int32_t rank = (slotIdx + 1) / 2;
+        return Vec2f{static_cast<float>(side * rank) * spacing, 0.0f};
+      }
+      case FormationType::ECHELON: {
+        return Vec2f{static_cast<float>(slotIdx) * spacing, -static_cast<float>(slotIdx) * spacing};
+      }
+      case FormationType::COLUMN: {
+        return Vec2f{0.0f, -static_cast<float>(slotIdx) * spacing};
+      }
     }
     return Vec2f{0.0f, 0.0f};
   }
@@ -314,13 +305,12 @@ static_assert(sizeof(RtsUnit) == 32, "RtsUnit must be 32 bytes for cache alignme
 template <size_t MAX_UNITS = 10000, int32_t MAP_W = 512, int32_t MAP_H = 512>
 class alignas(64) SwarmSimulation {
 public:
-  static constexpr int32_t CELL_SIZE = 2; // 2x2 fine spatial hash cell
+  static constexpr int32_t CELL_SIZE = 2;  // 2x2 fine spatial hash cell
   static constexpr int32_t GRID_COLS = (MAP_W + CELL_SIZE - 1) / CELL_SIZE;
   static constexpr int32_t GRID_ROWS = (MAP_H + CELL_SIZE - 1) / CELL_SIZE;
   static constexpr int32_t TOTAL_BINS = GRID_COLS * GRID_ROWS;
   static constexpr int32_t MAX_LOCAL_NEIGHBORS = 4;
-  static constexpr int8_t NEIGHBOR_OFFSETS[9][2] = {
-      {0, 0}, {0, -1}, {0, 1}, {-1, 0}, {1, 0}, {-1, -1}, {1, -1}, {-1, 1}, {1, 1}};
+  static constexpr int8_t NEIGHBOR_OFFSETS[9][2] = {{0, 0}, {0, -1}, {0, 1}, {-1, 0}, {1, 0}, {-1, -1}, {1, -1}, {-1, 1}, {1, 1}};
 
 private:
   alignas(64) SwarmAgentPool<MAX_UNITS> m_pool;
@@ -363,15 +353,9 @@ public:
   }
 
   [[nodiscard]] inline size_t GetUnitCount() const noexcept { return m_unitCount; }
-  [[nodiscard]] inline Vec2f GetUnitPos(size_t idx) const noexcept {
-    return Vec2f{m_pool.posX[idx], m_pool.posY[idx]};
-  }
-  [[nodiscard]] inline Vec2f GetUnitVel(size_t idx) const noexcept {
-    return Vec2f{m_pool.velX[idx], m_pool.velY[idx]};
-  }
-  [[nodiscard]] inline float GetUnitRadius(size_t idx) const noexcept {
-    return m_pool.radius[idx];
-  }
+  [[nodiscard]] inline Vec2f GetUnitPos(size_t idx) const noexcept { return Vec2f{m_pool.posX[idx], m_pool.posY[idx]}; }
+  [[nodiscard]] inline Vec2f GetUnitVel(size_t idx) const noexcept { return Vec2f{m_pool.velX[idx], m_pool.velY[idx]}; }
+  [[nodiscard]] inline float GetUnitRadius(size_t idx) const noexcept { return m_pool.radius[idx]; }
 
   // Backward-compatible unit array view (synced on demand)
   [[nodiscard]] inline const RtsUnit *GetUnits() const noexcept {
@@ -387,15 +371,13 @@ public:
 
   // Pre-warms instruction caches, branch predictors, and page tables
   template <typename FlowFieldType, typename ObstacleCheckFunc>
-  void Warmup(const FlowFieldType &flowField, ObstacleCheckFunc &&isBlocked,
-              Vec2f goalPos, float goalRadius = 4.0f) noexcept {
+  void Warmup(const FlowFieldType &flowField, ObstacleCheckFunc &&isBlocked, Vec2f goalPos, float goalRadius = 4.0f) noexcept {
     Update(0.0001f, flowField, isBlocked, goalPos, goalRadius);
   }
 
   // 60 FPS Swarm Update: 10,000 units in < 1.0 ms (SoA SIMD mechanical sympathy)
   template <typename FlowFieldType, typename ObstacleCheckFunc>
-  void Update(float dt, const FlowFieldType &flowField, ObstacleCheckFunc &&isBlocked,
-              Vec2f goalPos, float goalRadius = 4.0f) noexcept {
+  void Update(float dt, const FlowFieldType &flowField, ObstacleCheckFunc &&isBlocked, Vec2f goalPos, float goalRadius = 4.0f) noexcept {
     if (!m_binHead || !m_unitNext || m_unitCount == 0) return;
 
     // 1. Clear spatial hash bins
@@ -481,7 +463,7 @@ public:
               separation.x += normX * (overlap * 14.0f);
               separation.y += normY * (overlap * 14.0f);
               ++checked;
-            } else if (distSq < 4.0f) { // Flocking neighborhood (2 meters)
+            } else if (distSq < 4.0f) {  // Flocking neighborhood (2 meters)
               const float invDist = 1.0f / std::sqrt(distSq);
               const float dist = distSq * invDist;
               const float w = 1.0f / (dist + 0.1f);
@@ -506,10 +488,7 @@ public:
       }
 
       // Blend Steerings: Flow (65%) + Separation (25%) + Alignment (5%) + Cohesion (5%)
-      Vec2f desiredVel = flowVec * (speed * 0.65f) +
-                         separation * 0.25f +
-                         alignment * 0.05f +
-                         cohesion * 0.05f;
+      Vec2f desiredVel = flowVec * (speed * 0.65f) + separation * 0.25f + alignment * 0.05f + cohesion * 0.05f;
 
       if (desiredVel.LengthSq() > speed * speed) {
         desiredVel = desiredVel.Normalized() * speed;
@@ -548,4 +527,4 @@ public:
   }
 };
 
-} // namespace halo::swarm
+}  // namespace halo::swarm

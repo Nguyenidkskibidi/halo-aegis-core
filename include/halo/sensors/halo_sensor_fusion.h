@@ -29,14 +29,8 @@ struct alignas(16) PointXYZ {
 // Projects an angular acoustic cone (theta +/- delta_theta, r) onto the bitboard
 // using precomputed branchless integer Bresenham arcs in < 15 ns.
 template <typename BitboardType>
-HALO_INLINE void IngestRangeConeFixedPoint(
-    BitboardType &bb,
-    int32_t originX,
-    int32_t originY,
-    int32_t headingDeg,
-    int32_t halfApertureDeg,
-    int32_t rangeCells,
-    swar::Layer layer = swar::Layer::STATIC_WALLS) noexcept {
+HALO_INLINE void IngestRangeConeFixedPoint(BitboardType &bb, int32_t originX, int32_t originY, int32_t headingDeg, int32_t halfApertureDeg,
+                                           int32_t rangeCells, swar::Layer layer = swar::Layer::STATIC_WALLS) noexcept {
   if (HALO_UNLIKELY(rangeCells <= 0)) return;
 
   const int32_t startAngle = headingDeg - halfApertureDeg;
@@ -59,17 +53,10 @@ HALO_INLINE void IngestRangeConeFixedPoint(
 // Converts raw polar arrays (distance, angle) to SWAR bitboard hazards
 // using 64-byte aligned SIMD trigonometry LUTs in < 1.5 µs for 360-1,000 points.
 template <typename BitboardType>
-[[gnu::hot]] inline void IngestLaserScanPolarSIMD(
-    BitboardType &bb,
-    const float *HALO_RESTRICT ranges,
-    int32_t pointCount,
-    float angleMinRad,
-    float angleIncrementRad,
-    float originX,
-    float originY,
-    float scaleMetersToCells = 1.0f,
-    float maxRangeMeters = 20.0f,
-    swar::Layer layer = swar::Layer::STATIC_WALLS) noexcept {
+[[gnu::hot]] inline void IngestLaserScanPolarSIMD(BitboardType &bb, const float *HALO_RESTRICT ranges, int32_t pointCount,
+                                                  float angleMinRad, float angleIncrementRad, float originX, float originY,
+                                                  float scaleMetersToCells = 1.0f, float maxRangeMeters = 20.0f,
+                                                  swar::Layer layer = swar::Layer::STATIC_WALLS) noexcept {
   if (HALO_UNLIKELY(!ranges || pointCount <= 0)) return;
 
   // Fast integer-degree lookup when increments align to ~1 degree, or vectorized float trigonometry
@@ -80,7 +67,7 @@ template <typename BitboardType>
   int32_t i = 0;
   // 4-wide loop unrolling for superscalar execution
   for (; i <= pointCount - 4; i += 4) {
-    #pragma unroll
+#pragma unroll
     for (int k = 0; k < 4; ++k) {
       const int idx = i + k;
       const float r = ranges[idx];
@@ -118,23 +105,12 @@ template <typename BitboardType>
 // Employs cache-blocked vectorized projection that skips background pixels
 // using SIMD threshold masks, extracting ground-plane and obstacles in < 400 µs.
 template <typename BitboardType>
-[[gnu::hot]] inline void IngestDepthFrameDirect(
-    BitboardType &bb,
-    const uint16_t *HALO_RESTRICT depthMap,
-    int32_t width,
-    int32_t height,
-    float fx,
-    float fy,
-    float cx,
-    float cy,
-    float cameraHeightMeters,
-    float cameraPitchRad,
-    float depthScale = 0.001f, // millimeters to meters
-    float minValidDepth = 0.2f,
-    float maxValidDepth = 6.0f,
-    float groundTolerance = 0.15f,
-    int32_t stride = 4, // Subsampling stride for sub-millisecond execution
-    swar::Layer obstacleLayer = swar::Layer::STATIC_WALLS) noexcept {
+[[gnu::hot]] inline void IngestDepthFrameDirect(BitboardType &bb, const uint16_t *HALO_RESTRICT depthMap, int32_t width, int32_t height,
+                                                float fx, float fy, float cx, float cy, float cameraHeightMeters, float cameraPitchRad,
+                                                float depthScale = 0.001f,  // millimeters to meters
+                                                float minValidDepth = 0.2f, float maxValidDepth = 6.0f, float groundTolerance = 0.15f,
+                                                int32_t stride = 4,  // Subsampling stride for sub-millisecond execution
+                                                swar::Layer obstacleLayer = swar::Layer::STATIC_WALLS) noexcept {
   if (HALO_UNLIKELY(!depthMap || width <= 0 || height <= 0)) return;
 
   const uint16_t minRaw = static_cast<uint16_t>(minValidDepth / depthScale);
@@ -179,16 +155,9 @@ template <typename BitboardType>
 // Strided ingestion of raw Cartesian (x, y, z) packet bursts directly from network buffers
 // into multi-layer spatial clipmaps without intermediate memory copies.
 template <typename BitboardType>
-[[gnu::hot]] inline void IngestPointCloudZeroCopy(
-    BitboardType &bb,
-    const PointXYZ *HALO_RESTRICT points,
-    size_t pointCount,
-    float originX,
-    float originY,
-    float minHeight = 0.1f,
-    float maxHeight = 2.0f,
-    float maxRadius = 30.0f,
-    swar::Layer layer = swar::Layer::STATIC_WALLS) noexcept {
+[[gnu::hot]] inline void IngestPointCloudZeroCopy(BitboardType &bb, const PointXYZ *HALO_RESTRICT points, size_t pointCount, float originX,
+                                                  float originY, float minHeight = 0.1f, float maxHeight = 2.0f, float maxRadius = 30.0f,
+                                                  swar::Layer layer = swar::Layer::STATIC_WALLS) noexcept {
   if (HALO_UNLIKELY(!points || pointCount == 0)) return;
 
   const float maxRadiusSq = maxRadius * maxRadius;
@@ -209,4 +178,4 @@ template <typename BitboardType>
   }
 }
 
-} // namespace halo::sensors
+}  // namespace halo::sensors

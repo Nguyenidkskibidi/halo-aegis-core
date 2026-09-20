@@ -18,7 +18,7 @@ struct alignas(4) Fixed32 {
   static constexpr int32_t SHIFT = 16;
   static constexpr int32_t ONE = 1 << SHIFT;
   static constexpr int32_t HALF = 1 << (SHIFT - 1);
-  static constexpr int32_t PI_FP = 205887; // 3.14159265 * 65536
+  static constexpr int32_t PI_FP = 205887;  // 3.14159265 * 65536
 
   constexpr Fixed32() noexcept = default;
   constexpr explicit Fixed32(int32_t raw, bool /*rawTag*/) noexcept : v(raw) {}
@@ -26,25 +26,15 @@ struct alignas(4) Fixed32 {
   constexpr explicit Fixed32(float f) noexcept : v(static_cast<int32_t>(f * 65536.0f + (f >= 0 ? 0.5f : -0.5f))) {}
   constexpr explicit Fixed32(double d) noexcept : v(static_cast<int32_t>(d * 65536.0 + (d >= 0 ? 0.5 : -0.5))) {}
 
-  [[nodiscard]] constexpr float ToFloat() const noexcept {
-    return static_cast<float>(v) / 65536.0f;
-  }
+  [[nodiscard]] constexpr float ToFloat() const noexcept { return static_cast<float>(v) / 65536.0f; }
 
-  [[nodiscard]] constexpr int32_t ToInt() const noexcept {
-    return v >> SHIFT;
-  }
+  [[nodiscard]] constexpr int32_t ToInt() const noexcept { return v >> SHIFT; }
 
-  [[nodiscard]] static constexpr Fixed32 FromRaw(int32_t raw) noexcept {
-    return Fixed32(raw, true);
-  }
+  [[nodiscard]] static constexpr Fixed32 FromRaw(int32_t raw) noexcept { return Fixed32(raw, true); }
 
-  [[nodiscard]] static constexpr Fixed32 FromFloat(float f) noexcept {
-    return Fixed32(f);
-  }
+  [[nodiscard]] static constexpr Fixed32 FromFloat(float f) noexcept { return Fixed32(f); }
 
-  constexpr Fixed32 operator-() const noexcept {
-    return Fixed32(-v, true);
-  }
+  constexpr Fixed32 operator-() const noexcept { return Fixed32(-v, true); }
 
   constexpr Fixed32 &operator+=(Fixed32 rhs) noexcept {
     v += rhs.v;
@@ -166,8 +156,8 @@ inline constexpr TrigLut360 g_trigLut360{};
   int64_t ratioSq = (ratio * ratio) >> 16;
 
   // Padé / Polynomial: angle = ratio * (0.995354 - 0.288679 * ratio^2)
-  int64_t c1 = 65230; // 0.995354 * 65536
-  int64_t c2 = 18918; // 0.288679 * 65536
+  int64_t c1 = 65230;  // 0.995354 * 65536
+  int64_t c2 = 18918;  // 0.288679 * 65536
   int64_t poly = c1 - ((c2 * ratioSq) >> 16);
   int64_t angle = (ratio * poly) >> 16;
 
@@ -184,4 +174,4 @@ inline constexpr TrigLut360 g_trigLut360{};
   return Fixed32::FromRaw(static_cast<int32_t>(angle));
 }
 
-} // namespace halo::fixed
+}  // namespace halo::fixed

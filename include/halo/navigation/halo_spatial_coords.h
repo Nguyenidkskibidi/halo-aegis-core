@@ -10,7 +10,7 @@ namespace halo::spatial {
 // ============================================================================
 
 struct WGS84Constants {
-  static constexpr double SEMI_MAJOR_AXIS_A = 6378137.0;            // meters
+  static constexpr double SEMI_MAJOR_AXIS_A = 6378137.0;  // meters
   static constexpr double FLATTENING_F = 1.0 / 298.257223563;
   static constexpr double SEMI_MINOR_AXIS_B = SEMI_MAJOR_AXIS_A * (1.0 - FLATTENING_F);
   static constexpr double ECCENTRICITY_SQ_E2 = FLATTENING_F * (2.0 - FLATTENING_F);
@@ -20,24 +20,22 @@ struct WGS84Constants {
 
 // WGS84 Geodetic Position (Degrees, Meters)
 struct GeodeticCoord {
-  double lat = 0.0; // Latitude in decimal degrees [-90.0, +90.0]
-  double lon = 0.0; // Longitude in decimal degrees [-180.0, +180.0]
-  double alt = 0.0; // Height above WGS84 ellipsoid in meters
+  double lat = 0.0;  // Latitude in decimal degrees [-90.0, +90.0]
+  double lon = 0.0;  // Longitude in decimal degrees [-180.0, +180.0]
+  double alt = 0.0;  // Height above WGS84 ellipsoid in meters
 
   constexpr GeodeticCoord() noexcept = default;
-  constexpr GeodeticCoord(double _lat, double _lon, double _alt = 0.0) noexcept
-      : lat(_lat), lon(_lon), alt(_alt) {}
+  constexpr GeodeticCoord(double _lat, double _lon, double _alt = 0.0) noexcept : lat(_lat), lon(_lon), alt(_alt) {}
 };
 
 // High-Precision Metric Offset in Local Tangent Plane (East-North-Up)
 struct MetricCoord3D {
-  double x = 0.0; // East in meters
-  double y = 0.0; // North in meters
-  double z = 0.0; // Up in meters
+  double x = 0.0;  // East in meters
+  double y = 0.0;  // North in meters
+  double z = 0.0;  // Up in meters
 
   constexpr MetricCoord3D() noexcept = default;
-  constexpr MetricCoord3D(double _x, double _y, double _z = 0.0) noexcept
-      : x(_x), y(_y), z(_z) {}
+  constexpr MetricCoord3D(double _x, double _y, double _z = 0.0) noexcept : x(_x), y(_y), z(_z) {}
 
   [[nodiscard]] double Distance2D(const MetricCoord3D &o) const noexcept {
     double dx = x - o.x;
@@ -67,13 +65,9 @@ struct SpatialExtent2D {
   [[nodiscard]] constexpr double Width() const noexcept { return maxX - minX; }
   [[nodiscard]] constexpr double Height() const noexcept { return maxY - minY; }
 
-  [[nodiscard]] constexpr bool Contains(double x, double y) const noexcept {
-    return x >= minX && x <= maxX && y >= minY && y <= maxY;
-  }
+  [[nodiscard]] constexpr bool Contains(double x, double y) const noexcept { return x >= minX && x <= maxX && y >= minY && y <= maxY; }
 
-  [[nodiscard]] constexpr bool Contains(const MetricCoord3D &pt) const noexcept {
-    return Contains(pt.x, pt.y);
-  }
+  [[nodiscard]] constexpr bool Contains(const MetricCoord3D &pt) const noexcept { return Contains(pt.x, pt.y); }
 
   void Expand(double margin) noexcept {
     minX -= margin;
@@ -98,8 +92,8 @@ private:
   double m_cosLon = 0.0;
 
   // Curvature radii at reference latitude
-  double m_radiusNorth = 0.0; // Meridional radius (M)
-  double m_radiusEast = 0.0;  // Normal radius (N)
+  double m_radiusNorth = 0.0;  // Meridional radius (M)
+  double m_radiusEast = 0.0;   // Normal radius (N)
 
   // Precomputed Earth-Centered Earth-Fixed (ECEF) anchor point
   double m_refECEF_X = 0.0;
@@ -109,9 +103,7 @@ private:
 public:
   constexpr LocalTangentPlane() noexcept = default;
 
-  explicit LocalTangentPlane(const GeodeticCoord &datumAnchor) noexcept {
-    SetDatum(datumAnchor);
-  }
+  explicit LocalTangentPlane(const GeodeticCoord &datumAnchor) noexcept { SetDatum(datumAnchor); }
 
   void SetDatum(const GeodeticCoord &datumAnchor) noexcept {
     m_datum = datumAnchor;
@@ -127,8 +119,7 @@ public:
     double denom = std::sqrt(1.0 - WGS84Constants::ECCENTRICITY_SQ_E2 * sinSqLat);
 
     m_radiusEast = WGS84Constants::SEMI_MAJOR_AXIS_A / denom;
-    m_radiusNorth = (WGS84Constants::SEMI_MAJOR_AXIS_A * (1.0 - WGS84Constants::ECCENTRICITY_SQ_E2)) /
-                    (denom * denom * denom);
+    m_radiusNorth = (WGS84Constants::SEMI_MAJOR_AXIS_A * (1.0 - WGS84Constants::ECCENTRICITY_SQ_E2)) / (denom * denom * denom);
 
     // Compute reference ECEF coordinates
     m_refECEF_X = (m_radiusEast + m_datum.alt) * m_cosLat * m_cosLon;
@@ -136,9 +127,7 @@ public:
     m_refECEF_Z = (m_radiusEast * (1.0 - WGS84Constants::ECCENTRICITY_SQ_E2) + m_datum.alt) * m_sinLat;
   }
 
-  [[nodiscard]] const GeodeticCoord &GetDatum() const noexcept {
-    return m_datum;
-  }
+  [[nodiscard]] const GeodeticCoord &GetDatum() const noexcept { return m_datum; }
 
   // Convert Geodetic (WGS84) to Local Tangent Plane (ENU meters)
   [[nodiscard]] MetricCoord3D GeodeticToENU(const GeodeticCoord &geo) const noexcept {
@@ -162,9 +151,9 @@ public:
     double dz = ecefZ - m_refECEF_Z;
 
     // Standard ECEF to ENU rotation matrix
-    double east  = -m_sinLon * dx + m_cosLon * dy;
+    double east = -m_sinLon * dx + m_cosLon * dy;
     double north = -m_sinLat * m_cosLon * dx - m_sinLat * m_sinLon * dy + m_cosLat * dz;
-    double up    =  m_cosLat * m_cosLon * dx + m_cosLat * m_sinLon * dy + m_sinLat * dz;
+    double up = m_cosLat * m_cosLon * dx + m_cosLat * m_sinLon * dy + m_sinLat * dz;
 
     return MetricCoord3D(east, north, up);
   }
@@ -174,9 +163,9 @@ public:
     double dLatRad = (geo.lat - m_datum.lat) * WGS84Constants::DEG_TO_RAD;
     double dLonRad = (geo.lon - m_datum.lon) * WGS84Constants::DEG_TO_RAD;
 
-    double east  = dLonRad * (m_radiusEast + m_datum.alt) * m_cosLat;
+    double east = dLonRad * (m_radiusEast + m_datum.alt) * m_cosLat;
     double north = dLatRad * (m_radiusNorth + m_datum.alt);
-    double up    = geo.alt - m_datum.alt;
+    double up = geo.alt - m_datum.alt;
 
     return MetricCoord3D(east, north, up);
   }
@@ -185,8 +174,8 @@ public:
   [[nodiscard]] GeodeticCoord ENUToGeodetic(const MetricCoord3D &enu) const noexcept {
     // ENU to ECEF rotation
     double dx = -m_sinLon * enu.x - m_sinLat * m_cosLon * enu.y + m_cosLat * m_cosLon * enu.z;
-    double dy =  m_cosLon * enu.x - m_sinLat * m_sinLon * enu.y + m_cosLat * m_sinLon * enu.z;
-    double dz =                     m_cosLat * enu.y            + m_sinLat * enu.z;
+    double dy = m_cosLon * enu.x - m_sinLat * m_sinLon * enu.y + m_cosLat * m_sinLon * enu.z;
+    double dz = m_cosLat * enu.y + m_sinLat * enu.z;
 
     double x = m_refECEF_X + dx;
     double y = m_refECEF_Y + dy;
@@ -194,8 +183,7 @@ public:
 
     // Bowring's closed-form ECEF to Geodetic algorithm
     double p = std::sqrt(x * x + y * y);
-    double theta = std::atan2(z * WGS84Constants::SEMI_MAJOR_AXIS_A,
-                              p * WGS84Constants::SEMI_MINOR_AXIS_B);
+    double theta = std::atan2(z * WGS84Constants::SEMI_MAJOR_AXIS_A, p * WGS84Constants::SEMI_MINOR_AXIS_B);
 
     double sinTheta = std::sin(theta);
     double cosTheta = std::cos(theta);
@@ -212,10 +200,8 @@ public:
     double N = WGS84Constants::SEMI_MAJOR_AXIS_A / std::sqrt(1.0 - WGS84Constants::ECCENTRICITY_SQ_E2 * sinLat * sinLat);
     double alt = p / std::cos(lat) - N;
 
-    return GeodeticCoord(lat * WGS84Constants::RAD_TO_DEG,
-                         lon * WGS84Constants::RAD_TO_DEG,
-                         alt);
+    return GeodeticCoord(lat * WGS84Constants::RAD_TO_DEG, lon * WGS84Constants::RAD_TO_DEG, alt);
   }
 };
 
-} // namespace halo::spatial
+}  // namespace halo::spatial

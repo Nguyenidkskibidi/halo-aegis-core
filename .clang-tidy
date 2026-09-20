@@ -1,0 +1,23 @@
+---
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-signed-bitwise,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-macro-parentheses,
+  -bugprone-incorrect-roundings,
+  -bugprone-implicit-widening-of-multiplication-result,
+  -bugprone-exception-escape,
+  -bugprone-random-generator-seed,
+  performance-*,
+  -performance-no-int-to-ptr,
+  clang-analyzer-core.*,
+  clang-analyzer-cplusplus.*,
+  clang-analyzer-nullability.*,
+  misc-definitions-in-headers,
+  misc-unused-parameters
+
+HeaderFilterRegex: 'include/halo/.*'
+FormatStyle: file
+WarningsAsErrors: ''
+...

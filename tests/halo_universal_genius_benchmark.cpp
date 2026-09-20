@@ -42,9 +42,7 @@ template <typename T>
   return static_cast<uint64_t>(ts.tv_sec) * 1000000000ULL + ts.tv_nsec;
 #else
   return static_cast<uint64_t>(
-      std::chrono::duration_cast<std::chrono::nanoseconds>(
-          std::chrono::steady_clock::now().time_since_epoch())
-          .count());
+      std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
 #endif
 }
 
@@ -76,7 +74,8 @@ LatencySummary ComputeSummary(std::vector<uint64_t> &samples) {
   s.p99Ns = samples[samples.size() * 99 / 100];
 
   double sum = 0.0;
-  for (uint64_t v : samples) sum += static_cast<double>(v);
+  for (uint64_t v : samples)
+    sum += static_cast<double>(v);
   s.meanNs = sum / samples.size();
   return s;
 }
@@ -227,9 +226,8 @@ bool RunGate2KinodynamicLatency(memory::ArenaAllocator &masterArena) {
     auto ptA = segA.Evaluate(tB);
     auto ptB = segB.Evaluate(tB);
 
-    if (std::abs(ptA.pos.x - ptB.pos.x) > 0.02f || std::abs(ptA.pos.y - ptB.pos.y) > 0.02f ||
-        std::abs(ptA.vel.x - ptB.vel.x) > 0.02f || std::abs(ptA.vel.y - ptB.vel.y) > 0.02f ||
-        std::abs(ptA.acc.x - ptB.acc.x) > 0.02f || std::abs(ptA.acc.y - ptB.acc.y) > 0.02f) {
+    if (std::abs(ptA.pos.x - ptB.pos.x) > 0.02f || std::abs(ptA.pos.y - ptB.pos.y) > 0.02f || std::abs(ptA.vel.x - ptB.vel.x) > 0.02f ||
+        std::abs(ptA.vel.y - ptB.vel.y) > 0.02f || std::abs(ptA.acc.x - ptB.acc.x) > 0.02f || std::abs(ptA.acc.y - ptB.acc.y) > 0.02f) {
       c3Continuous = false;
       break;
     }
@@ -295,8 +293,7 @@ bool RunGate3MicroFootprintInvariant() {
     float expectedS = std::sin(deg * (3.14159265358979323846 / 180.0));
     float expectedC = std::cos(deg * (3.14159265358979323846 / 180.0));
 
-    if (std::abs(sFp.ToFloat() - expectedS) > 0.005f ||
-        std::abs(cFp.ToFloat() - expectedC) > 0.005f) {
+    if (std::abs(sFp.ToFloat() - expectedS) > 0.005f || std::abs(cFp.ToFloat() - expectedC) > 0.005f) {
       trigValid = false;
       break;
     }
@@ -332,14 +329,13 @@ bool RunGate3MicroFootprintInvariant() {
   engine.BootSystemWithBuffer(&grid, s_microSram, sizeof(s_microSram));
 
   size_t allocatedBytes = engine.GetMasterArenaOffset();
-  constexpr size_t MAX_CAPACITY = 64 * 1024; // 65,536 Bytes
+  constexpr size_t MAX_CAPACITY = 64 * 1024;  // 65,536 Bytes
 
   PathResult res = engine.RouteGrid({2, 2}, {29, 29});
   bool routingSuccess = res.found && res.len > 0;
 
   std::printf("  Target Architecture    : ESP32 / STM32 Bare-Metal (< 64 KB RAM Cap)\n");
-  std::printf("  Static SRAM Consumed   : %zu / %zu bytes (%.2f KB / 64.00 KB)\n",
-              allocatedBytes, MAX_CAPACITY, allocatedBytes / 1024.0);
+  std::printf("  Static SRAM Consumed   : %zu / %zu bytes (%.2f KB / 64.00 KB)\n", allocatedBytes, MAX_CAPACITY, allocatedBytes / 1024.0);
   std::printf("  Dynamic Heap Usage     : 0 bytes (Pure Static Memory Guarantee)\n");
   std::printf("  Integer Trig Invariant : %s (Max Error < 0.005)\n", trigValid ? "PASSED" : "FAILED");
   std::printf("  Integer Sqrt Invariant : %s (Max Error < 0.01)\n", sqrtValid ? "PASSED" : "FAILED");
@@ -366,15 +362,10 @@ bool RunGate4DynamicObstacleReaction() {
 
   kinodynamics::KinodynamicLimits limits;
   limits.maxVelocity = 4.0f;
-  limits.maxAcceleration = 5.0f; // 5.0 m/s^2 emergency deceleration
+  limits.maxAcceleration = 5.0f;  // 5.0 m/s^2 emergency deceleration
   limits.nominalSpeed = 3.0f;
 
-  Vec2f waypoints[4] = {
-    {0.0f, 0.0f},
-    {20.0f, 0.0f},
-    {20.0f, 20.0f},
-    {40.0f, 20.0f}
-  };
+  Vec2f waypoints[4] = {{0.0f, 0.0f}, {20.0f, 0.0f}, {20.0f, 20.0f}, {40.0f, 20.0f}};
 
   kinodynamics::KinodynamicTrajectory traj;
   bool ok = kinodynamics::GenerateQuinticTrajectory(waypoints, 4, limits, traj);
@@ -398,8 +389,8 @@ bool RunGate4DynamicObstacleReaction() {
 
     // Trajectory collision projector
     bool collisionThreat = false;
-    float distToObs = std::sqrt((curPt.pos.x - obsPt.pos.x) * (curPt.pos.x - obsPt.pos.x) +
-                                (curPt.pos.y - obsPt.pos.y) * (curPt.pos.y - obsPt.pos.y));
+    float distToObs =
+        std::sqrt((curPt.pos.x - obsPt.pos.x) * (curPt.pos.x - obsPt.pos.x) + (curPt.pos.y - obsPt.pos.y) * (curPt.pos.y - obsPt.pos.y));
 
     for (float dt = 0.05f; dt <= 3.0f; dt += 0.05f) {
       auto futurePt = traj.Evaluate(tNow + dt);
@@ -447,10 +438,8 @@ bool RunGate4DynamicObstacleReaction() {
   std::printf("  Total Injected Trials  : %d dynamic trials\n", TRIALS);
   std::printf("  Collision Count        : %d collisions (%.2f%%)\n", collisions, collisionRate);
   std::printf("  Safe Emergency Brakes  : %d successful\n", successfulBrakes);
-  std::printf("  Pure Pursuit Latency   : %.2f ns/tick (Potential Frequency: %.2f MHz)\n",
-              ppLatencyNs, 1000.0 / ppLatencyNs);
-  std::printf("  Stanley Tracker Latency: %.2f ns/tick (Potential Frequency: %.2f MHz)\n",
-              stanleyLatencyNs, 1000.0 / stanleyLatencyNs);
+  std::printf("  Pure Pursuit Latency   : %.2f ns/tick (Potential Frequency: %.2f MHz)\n", ppLatencyNs, 1000.0 / ppLatencyNs);
+  std::printf("  Stanley Tracker Latency: %.2f ns/tick (Potential Frequency: %.2f MHz)\n", stanleyLatencyNs, 1000.0 / stanleyLatencyNs);
 
 #if defined(HALO_SANITIZER_ACTIVE)
   constexpr double TARGET_TRACKER_NS = 200.0;
@@ -467,7 +456,7 @@ bool RunGate4DynamicObstacleReaction() {
   return passed;
 }
 
-} // namespace halo::genius
+}  // namespace halo::genius
 
 int main() {
   std::printf("================================================================================\n");

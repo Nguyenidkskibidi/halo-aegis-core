@@ -42,17 +42,11 @@ public:
     }
   }
 
-  inline void Clear() noexcept {
-    m_size = 0;
-  }
+  inline void Clear() noexcept { m_size = 0; }
 
-  [[nodiscard]] inline bool Empty() const noexcept {
-    return m_size == 0;
-  }
+  [[nodiscard]] inline bool Empty() const noexcept { return m_size == 0; }
 
-  [[nodiscard]] inline int32_t Size() const noexcept {
-    return m_size;
-  }
+  [[nodiscard]] inline int32_t Size() const noexcept { return m_size; }
 
   inline void Push(int32_t idx) noexcept {
     assert(m_size < m_cap && "FourAryMinHeap overflow");
@@ -77,9 +71,7 @@ public:
     }
   }
 
-  [[nodiscard]] inline bool Contains(int32_t idx) const noexcept {
-    return m_pos[idx] >= 0;
-  }
+  [[nodiscard]] inline bool Contains(int32_t idx) const noexcept { return m_pos[idx] >= 0; }
 
 private:
   [[gnu::noinline]] void SiftUp(int32_t pos, int32_t idx) noexcept {
@@ -159,4 +151,4 @@ private:
 using BinaryMinHeap = FourAryMinHeap;
 using MinHeap4Way = FourAryMinHeap;
 
-} // namespace halo
+}  // namespace halo

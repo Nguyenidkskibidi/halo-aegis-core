@@ -14,9 +14,7 @@ namespace halo::fov {
 struct alignas(64) VisibilityMask64 {
   uint64_t rows[64] = {};
 
-  HALO_INLINE void Clear() noexcept {
-    std::memset(rows, 0, sizeof(rows));
-  }
+  HALO_INLINE void Clear() noexcept { std::memset(rows, 0, sizeof(rows)); }
 
   HALO_INLINE void SetVisible(int32_t x, int32_t y) noexcept {
     if (x >= 0 && x < 64 && y >= 0 && y < 64) {
@@ -66,7 +64,7 @@ public:
   // Compute Circular Field of View up to radius R (max 31) into 64x64 bitmask centered at viewer
   template <typename BlockedFunc>
   [[gnu::cold]] [[gnu::noinline]] static void ComputeFOV(Vec2i viewerPos, int32_t radius, VisibilityMask64 &outMask,
-                         BlockedFunc &&isBlocked) noexcept {
+                                                         BlockedFunc &&isBlocked) noexcept {
     outMask.Clear();
     radius = std::clamp(radius, 1, 31);
     const int32_t rSq = radius * radius;
@@ -115,4 +113,4 @@ public:
   }
 };
 
-} // namespace halo::fov
+}  // namespace halo::fov

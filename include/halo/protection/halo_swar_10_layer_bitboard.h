@@ -37,9 +37,7 @@ private:
   int32_t m_h = 64;
 
 public:
-  UltimateBitboard64() noexcept {
-    Init(64, 64);
-  }
+  UltimateBitboard64() noexcept { Init(64, 64); }
 
   void Init(int32_t w = 64, int32_t h = 64) noexcept {
     m_w = (w > 64) ? 64 : ((w < 1) ? 1 : w);
@@ -58,8 +56,8 @@ public:
   }
 
   HALO_INLINE void SetBit(Layer layer, int32_t x, int32_t y) noexcept {
-    if (HALO_UNLIKELY(static_cast<uint32_t>(x) >= static_cast<uint32_t>(m_w) ||
-                      static_cast<uint32_t>(y) >= static_cast<uint32_t>(m_h))) return;
+    if (HALO_UNLIKELY(static_cast<uint32_t>(x) >= static_cast<uint32_t>(m_w) || static_cast<uint32_t>(y) >= static_cast<uint32_t>(m_h)))
+      return;
     const uint8_t l = static_cast<uint8_t>(layer);
     if (HALO_UNLIKELY(l >= static_cast<uint8_t>(Layer::MAX_LAYERS))) return;
 
@@ -73,8 +71,8 @@ public:
   }
 
   HALO_INLINE void ClearBit(Layer layer, int32_t x, int32_t y) noexcept {
-    if (HALO_UNLIKELY(static_cast<uint32_t>(x) >= static_cast<uint32_t>(m_w) ||
-                      static_cast<uint32_t>(y) >= static_cast<uint32_t>(m_h))) return;
+    if (HALO_UNLIKELY(static_cast<uint32_t>(x) >= static_cast<uint32_t>(m_w) || static_cast<uint32_t>(y) >= static_cast<uint32_t>(m_h)))
+      return;
     const uint8_t l = static_cast<uint8_t>(layer);
     if (HALO_UNLIKELY(l >= static_cast<uint8_t>(Layer::MAX_LAYERS))) return;
 
@@ -88,8 +86,8 @@ public:
   }
 
   [[nodiscard]] HALO_INLINE bool IsBitSet(Layer layer, int32_t x, int32_t y) const noexcept {
-    if (HALO_UNLIKELY(static_cast<uint32_t>(x) >= static_cast<uint32_t>(m_w) ||
-                      static_cast<uint32_t>(y) >= static_cast<uint32_t>(m_h))) return false;
+    if (HALO_UNLIKELY(static_cast<uint32_t>(x) >= static_cast<uint32_t>(m_w) || static_cast<uint32_t>(y) >= static_cast<uint32_t>(m_h)))
+      return false;
     const uint8_t l = static_cast<uint8_t>(layer);
     if (HALO_UNLIKELY(l >= static_cast<uint8_t>(Layer::MAX_LAYERS))) return false;
 
@@ -257,8 +255,8 @@ public:
     uint64_t cachedComposite = 0;
     for (int32_t s = 1; s <= numSteps; ++s) {
       Vec2f p = start + dir * (static_cast<float>(s) * stepSize);
-      int32_t ix = static_cast<int32_t>(p.x + 0.5f);
-      int32_t iy = static_cast<int32_t>(p.y + 0.5f);
+      int32_t ix = static_cast<int32_t>(std::round(p.x));
+      int32_t iy = static_cast<int32_t>(std::round(p.y));
       if (HALO_UNLIKELY(ix < 0 || ix >= m_w || iy < 0 || iy >= m_h || !m_data)) {
         return static_cast<float>(s - 1) * stepSize;
       }
@@ -337,4 +335,4 @@ public:
 
 using LayeredHazardMatrix = LayeredHazardMatrixT<0, 0>;
 
-} // namespace halo::swar
+}  // namespace halo::swar

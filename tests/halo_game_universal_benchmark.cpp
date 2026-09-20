@@ -36,11 +36,11 @@ namespace halo::test {
 }
 
 template <typename T>
-[[gnu::always_inline]] inline void DoNotOptimize(T const& val) {
+[[gnu::always_inline]] inline void DoNotOptimize(T const &val) {
   asm volatile("" : : "g"(val) : "memory");
 }
 template <typename T>
-[[gnu::always_inline]] inline void DoNotOptimize(T& val) {
+[[gnu::always_inline]] inline void DoNotOptimize(T &val) {
   asm volatile("" : "+m"(val) : : "memory");
 }
 
@@ -99,7 +99,8 @@ static void SortDoubles(double *arr, int32_t n) noexcept {
     topology::VoxelGrid3D<64, 64, 32> voxelGrid;
     voxelGrid.Init(arena);
     for (int32_t y = 10; y < 50; ++y) {
-      for (int32_t z = 5; z < 25; ++z) voxelGrid.SetSolid(32, y, z, true);
+      for (int32_t z = 5; z < 25; ++z)
+        voxelGrid.SetSolid(32, y, z, true);
     }
     Vec3f hitPos{0.0f, 0.0f, 0.0f};
     bool unobstructed = voxelGrid.RaycastDDA(Vec3f{10.0f, 25.0f, 15.0f}, Vec3f{50.0f, 25.0f, 15.0f}, &hitPos);
@@ -157,7 +158,8 @@ static void SortDoubles(double *arr, int32_t n) noexcept {
   double totalTimeUs = 0.0;
   double minTimeUs = 1e9;
   double maxTimeUs = 0.0;
-  int32_t successCount = 0; (void)successCount;
+  int32_t successCount = 0;
+  (void)successCount;
 
   for (int32_t q = 0; q < NUM_QUERIES; ++q) {
     Vec2i start{100 + (q * 13) % 200, 100 + (q * 17) % 200};
@@ -179,8 +181,7 @@ static void SortDoubles(double *arr, int32_t n) noexcept {
   double p99TimeUs = queryTimesUs[NUM_QUERIES - 2];
   double avgTimeUs = totalTimeUs / NUM_QUERIES;
 
-  printf("  Q:%d | Min:%.1f | Avg:%.1f | P99:%.1f | Max:%.1f us\n",
-         NUM_QUERIES, minTimeUs, avgTimeUs, p99TimeUs, maxTimeUs);
+  printf("  Q:%d | Min:%.1f | Avg:%.1f | P99:%.1f | Max:%.1f us\n", NUM_QUERIES, minTimeUs, avgTimeUs, p99TimeUs, maxTimeUs);
 
   assert(successCount > 0);
 #if defined(HALO_SANITIZER_ACTIVE)
@@ -324,18 +325,46 @@ static void SortDoubles(double *arr, int32_t n) noexcept {
 
   constexpr int32_t RAYCAST_ITERS = 100000;
   constexpr int32_t RAYS_PER_ROW = 32;
-  constexpr int32_t NUM_ROWS = RAYCAST_ITERS / RAYS_PER_ROW; // 3125 rows
+  constexpr int32_t NUM_ROWS = RAYCAST_ITERS / RAYS_PER_ROW;  // 3125 rows
   uint64_t tRay0 = GetHardwareTimestampNs();
   uint64_t accum = 0;
   for (int32_t i = 0; i < NUM_ROWS; ++i) {
     int32_t y = static_cast<int32_t>((i * 7) & 63);
     uint64_t row = board.GetCompositeRow(y);
-    #define R(offset) accum += halo::omnicontext::AdaptiveOmniEngine::RaycastRow(row, offset)
-    R(0);  R(1);  R(2);  R(3);  R(4);  R(5);  R(6);  R(7);
-    R(8);  R(9);  R(10); R(11); R(12); R(13); R(14); R(15);
-    R(16); R(17); R(18); R(19); R(20); R(21); R(22); R(23);
-    R(24); R(25); R(26); R(27); R(28); R(29); R(30); R(31);
-    #undef R
+#define R(offset) accum += halo::omnicontext::AdaptiveOmniEngine::RaycastRow(row, offset)
+    R(0);
+    R(1);
+    R(2);
+    R(3);
+    R(4);
+    R(5);
+    R(6);
+    R(7);
+    R(8);
+    R(9);
+    R(10);
+    R(11);
+    R(12);
+    R(13);
+    R(14);
+    R(15);
+    R(16);
+    R(17);
+    R(18);
+    R(19);
+    R(20);
+    R(21);
+    R(22);
+    R(23);
+    R(24);
+    R(25);
+    R(26);
+    R(27);
+    R(28);
+    R(29);
+    R(30);
+    R(31);
+#undef R
   }
   uint64_t tRay1 = GetHardwareTimestampNs();
   DoNotOptimize(accum);
@@ -387,7 +416,7 @@ static void SortDoubles(double *arr, int32_t n) noexcept {
 #endif
 }
 
-} // namespace halo::test
+}  // namespace halo::test
 
 int main() {
   puts("HALO AEGIS UNIVERSAL BENCHMARK");

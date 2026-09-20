@@ -30,8 +30,7 @@ private:
   }
 
   [[nodiscard]] HALO_INLINE bool IsWalkable(int32_t x, int32_t y) const noexcept {
-    if (static_cast<uint32_t>(x) >= static_cast<uint32_t>(m_w) ||
-        static_cast<uint32_t>(y) >= static_cast<uint32_t>(m_h)) return false;
+    if (static_cast<uint32_t>(x) >= static_cast<uint32_t>(m_w) || static_cast<uint32_t>(y) >= static_cast<uint32_t>(m_h)) return false;
     return m_grid->IsWalkable(ToIndex(x, y));
   }
 
@@ -83,12 +82,11 @@ private:
     return false;
   }
 
-  HALO_INLINE void SetDist(int32_t idx, int32_t dir, int16_t dist) noexcept {
-    m_jumpTable[(idx << 3) | dir] = dist;
-  }
+  HALO_INLINE void SetDist(int32_t idx, int32_t dir, int16_t dist) noexcept { m_jumpTable[(idx << 3) | dir] = dist; }
 
 private:
-  [[gnu::cold]] [[gnu::noinline]] void SweepDirection(int32_t dir, int32_t dx, int32_t dy, int32_t ortho1 = -1, int32_t ortho2 = -1) noexcept {
+  [[gnu::cold]] [[gnu::noinline]] void SweepDirection(int32_t dir, int32_t dx, int32_t dy, int32_t ortho1 = -1,
+                                                      int32_t ortho2 = -1) noexcept {
     int32_t startX = (dx > 0) ? m_w - 1 : 0;
     int32_t endX = (dx > 0) ? -1 : m_w;
     int32_t stepX = (dx > 0) ? -1 : 1;
@@ -103,19 +101,18 @@ private:
         int32_t idx = ToIndex(x, y);
         int32_t nx = x + dx;
         int32_t ny = y + dy;
-        if (nx < 0 || nx >= m_w || ny < 0 || ny >= m_h ||
-            !IsWalkable(nx, ny) || (diagonal && (!IsWalkable(nx, y) || !IsWalkable(x, ny)))) {
+        if (nx < 0 || nx >= m_w || ny < 0 || ny >= m_h || !IsWalkable(nx, ny) || (diagonal && (!IsWalkable(nx, y) || !IsWalkable(x, ny)))) {
           SetDist(idx, dir, 0);
         } else {
           int32_t nIdx = ToIndex(nx, ny);
-          bool forced = (dir == Direction::EAST) ? HasForcedNeighborEast(nx, ny) :
-                        (dir == Direction::WEST) ? HasForcedNeighborWest(nx, ny) :
-                        (dir == Direction::NORTH) ? HasForcedNeighborNorth(nx, ny) :
-                        (dir == Direction::SOUTH) ? HasForcedNeighborSouth(nx, ny) :
-                        (dir == Direction::NORTHEAST) ? HasForcedNeighborNE(nx, ny) :
-                        (dir == Direction::NORTHWEST) ? HasForcedNeighborNW(nx, ny) :
-                        (dir == Direction::SOUTHWEST) ? HasForcedNeighborSW(nx, ny) :
-                        HasForcedNeighborSE(nx, ny);
+          bool forced = (dir == Direction::EAST)        ? HasForcedNeighborEast(nx, ny)
+                        : (dir == Direction::WEST)      ? HasForcedNeighborWest(nx, ny)
+                        : (dir == Direction::NORTH)     ? HasForcedNeighborNorth(nx, ny)
+                        : (dir == Direction::SOUTH)     ? HasForcedNeighborSouth(nx, ny)
+                        : (dir == Direction::NORTHEAST) ? HasForcedNeighborNE(nx, ny)
+                        : (dir == Direction::NORTHWEST) ? HasForcedNeighborNW(nx, ny)
+                        : (dir == Direction::SOUTHWEST) ? HasForcedNeighborSW(nx, ny)
+                                                        : HasForcedNeighborSE(nx, ny);
           if (forced || (diagonal && (GetJumpDistance(nIdx, ortho1) > 0 || GetJumpDistance(nIdx, ortho2) > 0))) {
             SetDist(idx, dir, 1);
           } else {
@@ -154,8 +151,7 @@ public:
     SweepDirection(Direction::SOUTHEAST, 1, 1, Direction::EAST, Direction::SOUTH);
   }
 
-  [[nodiscard]] HALO_INLINE int16_t
-  GetJumpDistance(int32_t nodeIdx, int32_t direction) const noexcept {
+  [[nodiscard]] HALO_INLINE int16_t GetJumpDistance(int32_t nodeIdx, int32_t direction) const noexcept {
     assert(m_jumpTable != nullptr && "JpsPlusEngine not initialized");
     return m_jumpTable[(nodeIdx << 3) | direction];
   }
@@ -163,4 +159,4 @@ public:
 
 using JpsPlusEngine = JpsPlusEngineT<0, 0>;
 
-} // namespace halo
+}  // namespace halo

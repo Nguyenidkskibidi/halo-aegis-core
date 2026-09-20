@@ -86,19 +86,23 @@ Bạn có thể tham gia đóng góp bằng rất nhiều cách ý nghĩa:
    ```bash
    git checkout -b feature/toi-uu-cuc-chien
    ```
-3. **Chạy Kiểm Thử Độc Lập 7 Giai Đoạn**:
+3. **Chạy Kiểm Thử Độc Lập 11 Giai Đoạn**:
    - Trước khi gửi PR, hãy chạy toàn bộ pipeline kiểm định:
      ```bash
      ./scripts/build_and_verify.sh
      ```
-   - **Tất cả 7 giai đoạn phải đạt chuẩn 100%**:
-     - Giai đoạn 1: ASan & UBSan sạch bong (0 rò rỉ bộ nhớ, 0 hành vi bất định).
-     - Giai đoạn 2: Kích thước file nhị phân stripped $< 40\text{ KB}$.
-     - Giai đoạn 3: Mô phỏng bay né 500 vật cản đạt đúng 0.00% va chạm qua 5.000 chu kỳ.
-     - Giai đoạn 4: Cổng kiểm thử vi kiến trúc ($< 0.35\text{ ns}$ raycast, P99 $< 500\text{ ns}$ JPS+).
-     - Giai đoạn 5: Định tuyến không gian đô thị & đại lục với tổng RAM $\le 16.00\text{ MB}$.
-     - Giai đoạn 6: Kiểm thử vi điều khiển & ESP32 Zero-Heap tĩnh (100% xác thực trên 64 KB SRAM).
-     - Giai đoạn 7: Project Omni-Aegis Universal Genius Benchmark (4 cổng kiểm thử vật lý: nạp cảm biến $< 10\ \mu\text{s}$, động học tuyến $< 3\ \mu\text{s}$, bộ nhớ micro $\le 64\text{ KB}$, 0.00% va chạm vật cản động, bộ điều khiển bám 1 kHz $< 50\text{ ns}$).
+   - **Tất cả 11 giai đoạn phải đạt chuẩn 100%**:
+     - Giai đoạn 1: Chuẩn định dạng Clang-Format (100% tuân thủ `.clang-format`).
+     - Giai đoạn 2: Phân tích tĩnh Clang-Tidy (0 rủi ro an toàn bộ nhớ, 0 lỗi logic ngầm).
+     - Giai đoạn 3: Kiểm toán mã máy Assembly (0 byte cấp phát động heap trong vòng lặp intrinsic).
+     - Giai đoạn 4: ASan & UBSan sạch bong (0 rò rỉ bộ nhớ, 0 hành vi bất định).
+     - Giai đoạn 5: Kích thước file nhị phân stripped $< 40\text{ KB}$ ($34,304\text{ bytes}$).
+     - Giai đoạn 6: Mô phỏng bay né 500 vật cản đạt đúng 0.00% va chạm qua 5.000 chu kỳ.
+     - Giai đoạn 7: Cổng kiểm thử vi kiến trúc ($< 0.35\text{ ns}$ raycast, P99 $< 500\text{ ns}$ JPS+).
+     - Giai đoạn 8: Định tuyến không gian đô thị & đại lục với tổng RAM $\le 16.00\text{ MB}$.
+     - Giai đoạn 9: Kiểm thử vi điều khiển & ESP32 Zero-Heap tĩnh (100% xác thực trên 64 KB SRAM).
+     - Giai đoạn 10: Project Omni-Aegis Universal Genius Benchmark (4 cổng kiểm thử vật lý: nạp cảm biến $< 10\ \mu\text{s}$, động học tuyến $< 3\ \mu\text{s}$, bộ nhớ micro $\le 64\text{ KB}$, 0.00% va chạm vật cản động, bộ điều khiển bám 1 kHz $< 50\text{ ns}$).
+     - Giai đoạn 11: Bộ kiểm chuẩn chuẩn công nghiệp Google Benchmark (`halo_google_benchmark.cpp`).
 4. **Gửi Pull Request**:
    - Mô tả ngắn gọn, súc tích điều bạn đã thay đổi, lý do thay đổi và số liệu đo đạc so sánh trước/sau.
 5. **Chờ Phản Hồi Review**:

@@ -17,20 +17,18 @@ namespace halo::flight {
 // ============================================================================
 
 struct alignas(32) DroneKinematics {
-  Vec2f pos{0.0f, 0.0f};       // Position in continuous coordinates (meters/tiles)
-  Vec2f vel{0.0f, 0.0f};       // Velocity vector (m/s)
-  float heading = 0.0f;        // Heading yaw in radians [-PI, PI]
-  float speed = 0.0f;          // Current scalar speed (m/s)
+  Vec2f pos{0.0f, 0.0f};  // Position in continuous coordinates (meters/tiles)
+  Vec2f vel{0.0f, 0.0f};  // Velocity vector (m/s)
+  float heading = 0.0f;   // Heading yaw in radians [-PI, PI]
+  float speed = 0.0f;     // Current scalar speed (m/s)
 
-  float maxSpeed = 12.0f;      // Max linear speed (m/s)
-  float maxAcc = 6.0f;         // Max acceleration / deceleration (m/s^2)
-  float maxYawRate = 3.14159f; // Max turning rate (rad/s)
-  float radius = 0.4f;         // Drone collision hull radius (m)
-  float safetyMargin = 1.0f;   // Safe buffer zone (m)
+  float maxSpeed = 12.0f;       // Max linear speed (m/s)
+  float maxAcc = 6.0f;          // Max acceleration / deceleration (m/s^2)
+  float maxYawRate = 3.14159f;  // Max turning rate (rad/s)
+  float radius = 0.4f;          // Drone collision hull radius (m)
+  float safetyMargin = 1.0f;    // Safe buffer zone (m)
 
-  [[nodiscard]] HALO_INLINE float StoppingDistance() const noexcept {
-    return (speed * speed) / (2.0f * maxAcc) + safetyMargin;
-  }
+  [[nodiscard]] HALO_INLINE float StoppingDistance() const noexcept { return (speed * speed) / (2.0f * maxAcc) + safetyMargin; }
 
   // Smooth kinematic integration strictly bounded by max acceleration, yaw rate, and physical barrier safety
   template <typename MatrixType>
@@ -78,9 +76,9 @@ struct alignas(32) DroneKinematics {
 // ============================================================================
 
 enum class AgentType : uint8_t {
-  BALLISTIC = 0, // High-speed linear projectiles (12-20 m/s)
-  BROWNIAN = 1,  // Erratic wildlife/birds (3-6 m/s, random direction jumps)
-  PATROL = 2     // Vehicles patrolling back and forth (6-10 m/s)
+  BALLISTIC = 0,  // High-speed linear projectiles (12-20 m/s)
+  BROWNIAN = 1,   // Erratic wildlife/birds (3-6 m/s, random direction jumps)
+  PATROL = 2      // Vehicles patrolling back and forth (6-10 m/s)
 };
 
 struct alignas(32) DynamicObstacle {
@@ -101,9 +99,7 @@ struct alignas(32) DynamicObstacle {
     return rngState;
   }
 
-  HALO_INLINE float FastRngFloat() noexcept {
-    return static_cast<float>(FastRng() & 0xFFFF) / 65535.0f;
-  }
+  HALO_INLINE float FastRngFloat() noexcept { return static_cast<float>(FastRng() & 0xFFFF) / 65535.0f; }
 };
 
 template <size_t AGENT_COUNT = 500>
@@ -147,9 +143,9 @@ public:
       for (int t = 0; t < 200; ++t) {
         sx = 10 + static_cast<int32_t>(NextRandom() % (m_w - 20));
         sy = 10 + static_cast<int32_t>(NextRandom() % (m_h - 20));
-        if (staticGrid.IsWalkable(sx, sy) &&
-            (std::abs(sx - 15) > 25 || std::abs(sy - 10) > 25) &&
-            (std::abs(sx - 495) > 25 || std::abs(sy - 495) > 25)) break;
+        if (staticGrid.IsWalkable(sx, sy) && (std::abs(sx - 15) > 25 || std::abs(sy - 10) > 25) &&
+            (std::abs(sx - 495) > 25 || std::abs(sy - 495) > 25))
+          break;
       }
       a.pos = Vec2f{static_cast<float>(sx), static_cast<float>(sy)};
       float angle = static_cast<float>(NextRandom() % 628) * 0.01f;
@@ -170,9 +166,9 @@ public:
       for (int t = 0; t < 200; ++t) {
         sx = 10 + static_cast<int32_t>(NextRandom() % (m_w - 20));
         sy = 10 + static_cast<int32_t>(NextRandom() % (m_h - 20));
-        if (staticGrid.IsWalkable(sx, sy) &&
-            (std::abs(sx - 15) > 25 || std::abs(sy - 10) > 25) &&
-            (std::abs(sx - 495) > 25 || std::abs(sy - 495) > 25)) break;
+        if (staticGrid.IsWalkable(sx, sy) && (std::abs(sx - 15) > 25 || std::abs(sy - 10) > 25) &&
+            (std::abs(sx - 495) > 25 || std::abs(sy - 495) > 25))
+          break;
       }
       a.pos = Vec2f{static_cast<float>(sx), static_cast<float>(sy)};
       float angle = static_cast<float>(NextRandom() % 628) * 0.01f;
@@ -194,9 +190,9 @@ public:
       for (int t = 0; t < 200; ++t) {
         sx = 10 + static_cast<int32_t>(NextRandom() % (m_w - 20));
         sy = 10 + static_cast<int32_t>(NextRandom() % (m_h - 20));
-        if (staticGrid.IsWalkable(sx, sy) &&
-            (std::abs(sx - 15) > 25 || std::abs(sy - 10) > 25) &&
-            (std::abs(sx - 495) > 25 || std::abs(sy - 495) > 25)) break;
+        if (staticGrid.IsWalkable(sx, sy) && (std::abs(sx - 15) > 25 || std::abs(sy - 10) > 25) &&
+            (std::abs(sx - 495) > 25 || std::abs(sy - 495) > 25))
+          break;
       }
       for (int t = 0; t < 200; ++t) {
         ex = std::clamp(sx + static_cast<int32_t>((NextRandom() % 60) - 30), 5, m_w - 6);
@@ -234,47 +230,47 @@ public:
       DynamicObstacle &a = m_agents[i];
 
       switch (a.type) {
-      case AgentType::BALLISTIC: {
-        Vec2f nextPos = a.pos + a.vel * dt;
-        int32_t nx = static_cast<int32_t>(nextPos.x + 0.5f);
-        int32_t ny = static_cast<int32_t>(nextPos.y + 0.5f);
-        if (nx < 2 || nx >= m_w - 2 || ny < 2 || ny >= m_h - 2 || !staticGrid.IsWalkable(nx, ny)) {
-          if (nx < 2 || nx >= m_w - 2 || !staticGrid.IsWalkable(nx, a.lastGridY)) a.vel.x = -a.vel.x;
-          if (ny < 2 || ny >= m_h - 2 || !staticGrid.IsWalkable(a.lastGridX, ny)) a.vel.y = -a.vel.y;
-          nextPos = a.pos + a.vel * dt;
+        case AgentType::BALLISTIC: {
+          Vec2f nextPos = a.pos + a.vel * dt;
+          int32_t nx = static_cast<int32_t>(nextPos.x + 0.5f);
+          int32_t ny = static_cast<int32_t>(nextPos.y + 0.5f);
+          if (nx < 2 || nx >= m_w - 2 || ny < 2 || ny >= m_h - 2 || !staticGrid.IsWalkable(nx, ny)) {
+            if (nx < 2 || nx >= m_w - 2 || !staticGrid.IsWalkable(nx, a.lastGridY)) a.vel.x = -a.vel.x;
+            if (ny < 2 || ny >= m_h - 2 || !staticGrid.IsWalkable(a.lastGridX, ny)) a.vel.y = -a.vel.y;
+            nextPos = a.pos + a.vel * dt;
+          }
+          a.pos = nextPos;
+          break;
         }
-        a.pos = nextPos;
-        break;
-      }
-      case AgentType::BROWNIAN: {
-        if ((a.FastRng() % 15) == 0) {
-          float dAngle = (a.FastRngFloat() - 0.5f) * 1.5f;
-          float curAngle = std::atan2(a.vel.y, a.vel.x) + dAngle;
-          a.vel = Vec2f{std::cos(curAngle), std::sin(curAngle)} * a.speed;
+        case AgentType::BROWNIAN: {
+          if ((a.FastRng() % 15) == 0) {
+            float dAngle = (a.FastRngFloat() - 0.5f) * 1.5f;
+            float curAngle = std::atan2(a.vel.y, a.vel.x) + dAngle;
+            a.vel = Vec2f{std::cos(curAngle), std::sin(curAngle)} * a.speed;
+          }
+          Vec2f nextPos = a.pos + a.vel * dt;
+          int32_t nx = static_cast<int32_t>(nextPos.x + 0.5f);
+          int32_t ny = static_cast<int32_t>(nextPos.y + 0.5f);
+          if (nx < 2 || nx >= m_w - 2 || ny < 2 || ny >= m_h - 2 || !staticGrid.IsWalkable(nx, ny)) {
+            a.vel = a.vel * -1.0f;
+            nextPos = a.pos + a.vel * dt;
+          }
+          a.pos = nextPos;
+          break;
         }
-        Vec2f nextPos = a.pos + a.vel * dt;
-        int32_t nx = static_cast<int32_t>(nextPos.x + 0.5f);
-        int32_t ny = static_cast<int32_t>(nextPos.y + 0.5f);
-        if (nx < 2 || nx >= m_w - 2 || ny < 2 || ny >= m_h - 2 || !staticGrid.IsWalkable(nx, ny)) {
-          a.vel = a.vel * -1.0f;
-          nextPos = a.pos + a.vel * dt;
+        case AgentType::PATROL: {
+          Vec2f target = a.patrolForward ? a.patrolB : a.patrolA;
+          Vec2f diff = target - a.pos;
+          float distSq = diff.LengthSq();
+          if (distSq < 1.5f) {
+            a.patrolForward = !a.patrolForward;
+            target = a.patrolForward ? a.patrolB : a.patrolA;
+            diff = target - a.pos;
+          }
+          a.vel = diff.Normalized() * a.speed;
+          a.pos += a.vel * dt;
+          break;
         }
-        a.pos = nextPos;
-        break;
-      }
-      case AgentType::PATROL: {
-        Vec2f target = a.patrolForward ? a.patrolB : a.patrolA;
-        Vec2f diff = target - a.pos;
-        float distSq = diff.LengthSq();
-        if (distSq < 1.5f) {
-          a.patrolForward = !a.patrolForward;
-          target = a.patrolForward ? a.patrolB : a.patrolA;
-          diff = target - a.pos;
-        }
-        a.vel = diff.Normalized() * a.speed;
-        a.pos += a.vel * dt;
-        break;
-      }
       }
 
       a.pos.x = std::clamp(a.pos.x, 2.0f, static_cast<float>(m_w - 3));
@@ -304,11 +300,11 @@ public:
 // ============================================================================
 
 struct FlightTelemetry {
-  uint64_t cycleTimeNs = 0;       // Total cycle execution time (ns)
-  uint64_t evasionLatencyNs = 0;   // Local reactive evasion scan time (ns)
-  float minClearanceDist = 999.0f;// Distance to nearest obstacle (m)
-  bool evasionActive = false;     // True if tangential deflection is active
-  bool deadlineMissed = false;    // True if cycle execution exceeded 2.0 ms
+  uint64_t cycleTimeNs = 0;         // Total cycle execution time (ns)
+  uint64_t evasionLatencyNs = 0;    // Local reactive evasion scan time (ns)
+  float minClearanceDist = 999.0f;  // Distance to nearest obstacle (m)
+  bool evasionActive = false;       // True if tangential deflection is active
+  bool deadlineMissed = false;      // True if cycle execution exceeded 2.0 ms
 };
 
 template <int32_t W = 512, int32_t H = 512>
@@ -323,27 +319,19 @@ private:
   // Pre-calculated candidate evasion angles: +/- 30, 45, 60, 90 deg
   static constexpr int32_t NUM_DEFLECTION_ANGLES = 8;
   static constexpr float DEFLECTION_ANGLES[NUM_DEFLECTION_ANGLES] = {
-      0.52359877f,  // +30 deg
-      -0.52359877f, // -30 deg
-      0.78539816f,  // +45 deg
-      -0.78539816f, // -45 deg
-      1.04719755f,  // +60 deg
-      -1.04719755f, // -60 deg
-      1.57079632f,  // +90 deg
-      -1.57079632f  // -90 deg
+      0.52359877f,   // +30 deg
+      -0.52359877f,  // -30 deg
+      0.78539816f,   // +45 deg
+      -0.78539816f,  // -45 deg
+      1.04719755f,   // +60 deg
+      -1.04719755f,  // -60 deg
+      1.57079632f,   // +90 deg
+      -1.57079632f   // -90 deg
   };
-  static constexpr float COS_DEFLECTION[NUM_DEFLECTION_ANGLES] = {
-      0.86602540f,  0.86602540f,
-      0.70710678f,  0.70710678f,
-      0.50000000f,  0.50000000f,
-      0.00000000f,  0.00000000f
-  };
-  static constexpr float SIN_DEFLECTION[NUM_DEFLECTION_ANGLES] = {
-      0.50000000f, -0.50000000f,
-      0.70710678f, -0.70710678f,
-      0.86602540f, -0.86602540f,
-      1.00000000f, -1.00000000f
-  };
+  static constexpr float COS_DEFLECTION[NUM_DEFLECTION_ANGLES] = {0.86602540f, 0.86602540f, 0.70710678f, 0.70710678f,
+                                                                  0.50000000f, 0.50000000f, 0.00000000f, 0.00000000f};
+  static constexpr float SIN_DEFLECTION[NUM_DEFLECTION_ANGLES] = {0.50000000f, -0.50000000f, 0.70710678f, -0.70710678f,
+                                                                  0.86602540f, -0.86602540f, 1.00000000f, -1.00000000f};
 
 public:
   HierarchicalFlightEngine() noexcept = default;
@@ -412,15 +400,15 @@ public:
       for (size_t a = 0; a < swarm->Count(); ++a) {
         Vec2f delta = agents[a].pos - m_drone.pos;
         float dSq = delta.LengthSq();
-        if (dSq > 36.0f) continue; // Further than 6 meters
+        if (dSq > 36.0f) continue;  // Further than 6 meters
 
         Vec2f vRel = agents[a].vel - m_drone.vel;
         float vRelSq = vRel.LengthSq();
-        if (vRelSq > 0.5f && delta.Dot(vRel) < 0.0f) { // Moving toward each other
+        if (vRelSq > 0.5f && delta.Dot(vRel) < 0.0f) {  // Moving toward each other
           float tCpa = -delta.Dot(vRel) / vRelSq;
           if (tCpa > 0.0f && tCpa < 1.0f && tCpa < closestT) {
             Vec2f dMin = delta + vRel * tCpa;
-            if (dMin.LengthSq() < 3.24f) { // Closest approach < 1.8m
+            if (dMin.LengthSq() < 3.24f) {  // Closest approach < 1.8m
               closestT = tCpa;
               Vec2f perp1{-vRel.y, vRel.x};
               Vec2f perp2{vRel.y, -vRel.x};
@@ -440,9 +428,8 @@ public:
 
     // 3. Check direct path to macro waypoint AND velocity direction
     float forwardClearance = matrix.RaycastLine(m_drone.pos, dirTarget, lookaheadDist);
-    float velClearance = (m_drone.speed > 0.5f)
-                             ? matrix.RaycastLine(m_drone.pos, m_drone.vel.Normalized(), lookaheadDist)
-                             : forwardClearance;
+    float velClearance =
+        (m_drone.speed > 0.5f) ? matrix.RaycastLine(m_drone.pos, m_drone.vel.Normalized(), lookaheadDist) : forwardClearance;
     float minForwardClearance = std::min(forwardClearance, velClearance);
     telem.minClearanceDist = minForwardClearance;
 
@@ -503,7 +490,7 @@ public:
 
     uint64_t tEnd = GetHardwareTimestamp();
     telem.cycleTimeNs = tEnd - tStart;
-    telem.deadlineMissed = (telem.cycleTimeNs > 2000000ULL); // 2.0 ms hard deadline
+    telem.deadlineMissed = (telem.cycleTimeNs > 2000000ULL);  // 2.0 ms hard deadline
 
     return telem;
   }
@@ -522,4 +509,4 @@ private:
   }
 };
 
-} // namespace halo::flight
+}  // namespace halo::flight

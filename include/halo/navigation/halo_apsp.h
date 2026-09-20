@@ -97,4 +97,4 @@ public:
   }
 };
 
-} // namespace halo::urban
+}  // namespace halo::urban

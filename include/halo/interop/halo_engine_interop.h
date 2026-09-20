@@ -81,7 +81,7 @@ int32_t HaloSmoothPathChaikin(const HaloVec2f *inPoints, int32_t inCount, HaloVe
 int32_t HaloSmoothPathCatmullRom(const HaloVec2f *inPoints, int32_t inCount, HaloVec2f *outPoints, int32_t maxOut, int32_t subdivisions);
 
 #ifdef __cplusplus
-} // extern "C"
+}  // extern "C"
 
 // Implementation of the C-ABI functions using halo engine internals
 #include "../core/halo_memory.h"
@@ -210,9 +210,10 @@ inline int32_t HaloSmoothPathChaikin(const HaloVec2f *inPoints, int32_t inCount,
                                           reinterpret_cast<halo::Vec2f *>(outPoints), maxOut, iterations);
 }
 
-inline int32_t HaloSmoothPathCatmullRom(const HaloVec2f *inPoints, int32_t inCount, HaloVec2f *outPoints, int32_t maxOut, int32_t subdivisions) {
+inline int32_t HaloSmoothPathCatmullRom(const HaloVec2f *inPoints, int32_t inCount, HaloVec2f *outPoints, int32_t maxOut,
+                                        int32_t subdivisions) {
   return halo::postprocess::CatmullRomSpline(reinterpret_cast<const halo::Vec2f *>(inPoints), inCount,
                                              reinterpret_cast<halo::Vec2f *>(outPoints), maxOut, subdivisions);
 }
 
-#endif // __cplusplus
+#endif  // __cplusplus

@@ -7,12 +7,7 @@
 
 namespace halo::aegis {
 
-enum class ThreatType : uint8_t {
-  BALLISTIC_PROJECTILE = 0,
-  EMP_JAMMER_WAVE = 1,
-  THERMAL_EXPLOSION = 2,
-  DYNAMIC_SWARM = 3
-};
+enum class ThreatType : uint8_t { BALLISTIC_PROJECTILE = 0, EMP_JAMMER_WAVE = 1, THERMAL_EXPLOSION = 2, DYNAMIC_SWARM = 3 };
 
 struct Threat {
   ThreatType type = ThreatType::BALLISTIC_PROJECTILE;
@@ -29,9 +24,7 @@ public:
   AegisFusionEngine() noexcept = default;
   explicit AegisFusionEngine(swar::UltimateBitboard64 *grid) noexcept : m_aegisGrid(grid) {}
 
-  void BindGrid(swar::UltimateBitboard64 *grid) noexcept {
-    m_aegisGrid = grid;
-  }
+  void BindGrid(swar::UltimateBitboard64 *grid) noexcept { m_aegisGrid = grid; }
 
   // Zero-allocation Bresenham ray injection for ballistic threats
   void InjectBallisticThreat(Vec2i startPos, Vec2i velocityVector, int32_t steps = 10) noexcept {
@@ -111,4 +104,4 @@ public:
   }
 };
 
-} // namespace halo::aegis
+}  // namespace halo::aegis

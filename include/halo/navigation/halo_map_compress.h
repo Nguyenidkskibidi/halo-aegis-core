@@ -29,9 +29,7 @@ struct alignas(8) CircularExclusionZone {
 class SpatialRasterIngestor {
 public:
   // Decodes RLE spans directly into active sparse chunks
-  static void IngestSpans(sparse::SparseBitboardWorld &world,
-                          const RLESpatialSpan *spans,
-                          size_t spanCount) noexcept {
+  static void IngestSpans(sparse::SparseBitboardWorld &world, const RLESpatialSpan *spans, size_t spanCount) noexcept {
     for (size_t i = 0; i < spanCount; ++i) {
       const auto &span = spans[i];
       for (int32_t x = span.startX; x <= span.endX; ++x) {
@@ -41,8 +39,7 @@ public:
   }
 
   // Rasterizes circular aviation exclusion cones (Airports, Heliports, Radar)
-  static void IngestCircularZone(sparse::SparseBitboardWorld &world,
-                                const CircularExclusionZone &zone) noexcept {
+  static void IngestCircularZone(sparse::SparseBitboardWorld &world, const CircularExclusionZone &zone) noexcept {
     int32_t r = zone.radius;
     int32_t rSq = r * r;
 
@@ -56,10 +53,8 @@ public:
   }
 
   // Rasterizes rectangular urban buildings and obstacles
-  static void IngestRectangularBlock(sparse::SparseBitboardWorld &world,
-                                    int32_t minX, int32_t minY,
-                                    int32_t maxX, int32_t maxY,
-                                    uint8_t layer) noexcept {
+  static void IngestRectangularBlock(sparse::SparseBitboardWorld &world, int32_t minX, int32_t minY, int32_t maxX, int32_t maxY,
+                                     uint8_t layer) noexcept {
     for (int32_t y = minY; y <= maxY; ++y) {
       for (int32_t x = minX; x <= maxX; ++x) {
         world.SetBitWorld(layer, x, y);
@@ -76,7 +71,7 @@ class DynamicHorizonStreamer {
 private:
   int32_t m_lastVehicleX = 0;
   int32_t m_lastVehicleY = 0;
-  int32_t m_horizonRadius = 2000; // 2.0 km dynamic active horizon
+  int32_t m_horizonRadius = 2000;  // 2.0 km dynamic active horizon
 
 public:
   constexpr DynamicHorizonStreamer() noexcept = default;
@@ -88,8 +83,7 @@ public:
   }
 
   // Synchronizes rolling toroidal clipmap with current vehicle position
-  void UpdateVehiclePosition(sparse::SparseBitboardWorld &world,
-                             int32_t vehicleX, int32_t vehicleY) noexcept {
+  void UpdateVehiclePosition(sparse::SparseBitboardWorld &world, int32_t vehicleX, int32_t vehicleY) noexcept {
     m_lastVehicleX = vehicleX;
     m_lastVehicleY = vehicleY;
 
@@ -115,4 +109,4 @@ public:
   [[nodiscard]] int32_t GetHorizonRadius() const noexcept { return m_horizonRadius; }
 };
 
-} // namespace halo::streaming
+}  // namespace halo::streaming

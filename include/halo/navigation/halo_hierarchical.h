@@ -62,7 +62,7 @@ public:
     m_portals = arena.AllocateArray<MacroPortal, 64>(MAX_PORTALS);
     m_edges = arena.AllocateArray<PortalEdge, 64>(MAX_EDGES);
     m_searchNodes = arena.AllocateArray<PathNode, 64>(MAX_PORTALS + 4);
-    m_chunkPortals = reinterpret_cast<int32_t(*)[8]>(arena.AllocateArray<int32_t, 64>(TOTAL_CHUNKS * 8));
+    m_chunkPortals = reinterpret_cast<int32_t (*)[8]>(arena.AllocateArray<int32_t, 64>(TOTAL_CHUNKS * 8));
     m_chunkPortalCount = arena.AllocateArray<int8_t, 64>(TOTAL_CHUNKS);
     m_portalCount = 0;
     m_edgeCount = 0;
@@ -76,9 +76,7 @@ public:
     m_heap.Init(MAX_PORTALS + 4, m_searchNodes, arena);
   }
 
-  [[nodiscard]] HALO_INLINE int32_t ChunkCoordToId(int32_t cx, int32_t cy) const noexcept {
-    return cy * CHUNKS_X + cx;
-  }
+  [[nodiscard]] HALO_INLINE int32_t ChunkCoordToId(int32_t cx, int32_t cy) const noexcept { return cy * CHUNKS_X + cx; }
 
   [[nodiscard]] HALO_INLINE int32_t WorldPosToChunkId(Vec2i pos) const noexcept {
     int32_t cx = std::clamp(pos.x / CHUNK_SIZE, 0, CHUNKS_X - 1);
@@ -130,7 +128,10 @@ public:
         const int32_t mid = (spanStart + endV - 1) / 2;
         const Vec2i pPos = (curDir == 0) ? Vec2i{curFixed, mid} : Vec2i{mid, curFixed};
         const int32_t p = AddPortal(pPos, curChA, curChB);
-        if (p >= 0) { RegisterChunkPortal(curChA, p); RegisterChunkPortal(curChB, p); }
+        if (p >= 0) {
+          RegisterChunkPortal(curChA, p);
+          RegisterChunkPortal(curChB, p);
+        }
         spanStart = -1;
       }
     };
@@ -313,4 +314,4 @@ public:
   [[nodiscard]] inline int32_t GetEdgeCount() const noexcept { return m_edgeCount; }
 };
 
-} // namespace halo::hierarchical
+}  // namespace halo::hierarchical

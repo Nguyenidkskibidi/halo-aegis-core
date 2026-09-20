@@ -24,9 +24,7 @@ private:
   alignas(64) NativeWord m_shadow_map[MAP_SIZE][WORDS_PER_ROW];
 
 public:
-  AdaptiveOmniEngine() noexcept {
-    Init();
-  }
+  AdaptiveOmniEngine() noexcept { Init(); }
 
   void Init() noexcept {
     std::memset(m_raw_layers, 0, sizeof(m_raw_layers));
@@ -34,9 +32,7 @@ public:
   }
 
   HALO_INLINE void SetBit(uint8_t layer, int32_t x, int32_t y) noexcept {
-    if (HALO_UNLIKELY(static_cast<uint32_t>(x) >= MAP_SIZE ||
-                      static_cast<uint32_t>(y) >= MAP_SIZE ||
-                      layer >= NUM_LAYERS)) {
+    if (HALO_UNLIKELY(static_cast<uint32_t>(x) >= MAP_SIZE || static_cast<uint32_t>(y) >= MAP_SIZE || layer >= NUM_LAYERS)) {
       return;
     }
 
@@ -48,18 +44,13 @@ public:
   }
 
   [[nodiscard]] HALO_INLINE bool IsBitSet(uint8_t layer, int32_t x, int32_t y) const noexcept {
-    if (HALO_UNLIKELY(static_cast<uint32_t>(x) >= MAP_SIZE ||
-                      static_cast<uint32_t>(y) >= MAP_SIZE ||
-                      layer >= NUM_LAYERS)) {
+    if (HALO_UNLIKELY(static_cast<uint32_t>(x) >= MAP_SIZE || static_cast<uint32_t>(y) >= MAP_SIZE || layer >= NUM_LAYERS)) {
       return false;
     }
-    return (m_raw_layers[y][x >> 6][layer] &
-            (static_cast<NativeWord>(1) << (x & 63))) != 0;
+    return (m_raw_layers[y][x >> 6][layer] & (static_cast<NativeWord>(1) << (x & 63))) != 0;
   }
 
-  [[nodiscard]] HALO_INLINE NativeWord GetShadowRow(int32_t y) const noexcept {
-    return m_shadow_map[y][0];
-  }
+  [[nodiscard]] HALO_INLINE NativeWord GetShadowRow(int32_t y) const noexcept { return m_shadow_map[y][0]; }
 
   [[nodiscard]] HALO_INLINE static int32_t RaycastRow(NativeWord compositeRow, int32_t startX) noexcept {
     const NativeWord startMask = HALO_ALL_ONES << (startX & 63);
@@ -69,8 +60,7 @@ public:
   }
 
   // Pure in-register Escape Raycast (single cache line, ~0.25 ns latency)
-  [[nodiscard]] HALO_INLINE int32_t
-  EscapeRaycast(const int32_t startX, const int32_t y) const noexcept {
+  [[nodiscard]] HALO_INLINE int32_t EscapeRaycast(const int32_t startX, const int32_t y) const noexcept {
     if (HALO_UNLIKELY(static_cast<uint32_t>(startX) >= MAP_SIZE || static_cast<uint32_t>(y) >= MAP_SIZE)) {
       return MAP_SIZE - 1;
     }
@@ -99,4 +89,4 @@ public:
   }
 };
 
-} // namespace halo::omnicontext
+}  // namespace halo::omnicontext

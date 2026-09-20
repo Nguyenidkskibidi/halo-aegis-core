@@ -86,19 +86,23 @@ You are invited to contribute in many meaningful ways:
    ```bash
    git checkout -b feature/my-awesome-optimization
    ```
-3. **Verify Locally Against the 7-Stage Gate**:
+3. **Verify Locally Against the 11-Stage Gate**:
    - Before submitting, run the full automated verification pipeline:
      ```bash
      ./scripts/build_and_verify.sh
      ```
-   - **Must pass 100% across all 7 stages**:
-     - Stage 1: ASan & UBSan clean (0 memory leaks, 0 undefined behaviors).
-     - Stage 2: Stripped binary size $< 40\text{ KB}$ ($34,304\text{ bytes}$).
-     - Stage 3: Dynamic drone flight simulation (0.00% collisions across 5,000 cycles).
-     - Stage 4: Hardware maximization suite ($< 0.35\text{ ns}$ raycast, P99 $< 500\text{ ns}$ JPS+).
-     - Stage 5: Universal spatial benchmark (total RAM $\le 16.00\text{ MB}$).
-     - Stage 6: Embedded & ESP32 Zero-Heap verification (100% deterministic on 64 KB SRAM).
-     - Stage 7: Project Omni-Aegis Universal Genius Benchmark (all 4 physical gates: sensor ingestion $< 10\ \mu\text{s}$, kinodynamics $< 3\ \mu\text{s}$, micro footprint $\le 64\text{ KB}$, 0.00% dynamic collisions, 1 kHz trackers $< 50\text{ ns}$).
+   - **Must pass 100% across all 11 stages**:
+     - Stage 1: Clang-Format invariant clean (100% compliant with `.clang-format`).
+     - Stage 2: Clang-Tidy static analysis (0 memory safety risks, 0 logic bugs).
+     - Stage 3: Assembly generation audit (zero heap allocation in intrinsic loops).
+     - Stage 4: ASan & UBSan clean (0 memory leaks, 0 undefined behaviors).
+     - Stage 5: Stripped binary size $< 40\text{ KB}$ ($34,304\text{ bytes}$).
+     - Stage 6: Dynamic drone flight simulation (0.00% collisions across 5,000 cycles).
+     - Stage 7: Hardware maximization suite ($< 0.35\text{ ns}$ raycast, P99 $< 500\text{ ns}$ JPS+).
+     - Stage 8: Universal spatial benchmark (total RAM $\le 16.00\text{ MB}$).
+     - Stage 9: Embedded & ESP32 Zero-Heap verification (100% deterministic on 64 KB SRAM).
+     - Stage 10: Project Omni-Aegis Universal Genius Benchmark (all 4 physical gates: sensor ingestion $< 10\ \mu\text{s}$, kinodynamics $< 3\ \mu\text{s}$, micro footprint $\le 64\text{ KB}$, 0.00% dynamic collisions, 1 kHz trackers $< 50\text{ ns}$).
+     - Stage 11: Industry-Standard Google Benchmark Suite (`halo_google_benchmark.cpp`).
 4. **Submit Your PR**:
    - Provide a clear summary of what you changed, why you changed it, and include benchmark comparisons.
 5. **Wait for Review**:

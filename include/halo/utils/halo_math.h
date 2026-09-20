@@ -7,8 +7,7 @@
 
 namespace halo::math {
 
-[[nodiscard]] HALO_INLINE int32_t
-OctileDistanceFP(Vec2i current, Vec2i target) noexcept {
+[[nodiscard]] HALO_INLINE int32_t OctileDistanceFP(Vec2i current, Vec2i target) noexcept {
   int32_t dx = std::abs(current.x - target.x);
   int32_t dy = std::abs(current.y - target.y);
   int32_t mn = (dx < dy) ? dx : dy;
@@ -16,8 +15,7 @@ OctileDistanceFP(Vec2i current, Vec2i target) noexcept {
   return (mx << 10) + Config::SQRT2_MINUS_1_FP * mn;
 }
 
-[[nodiscard]] HALO_INLINE int32_t
-OctileDistanceFP_TieBreak(Vec2i current, Vec2i target, Vec2i start) noexcept {
+[[nodiscard]] HALO_INLINE int32_t OctileDistanceFP_TieBreak(Vec2i current, Vec2i target, Vec2i start) noexcept {
   int32_t dx = std::abs(current.x - target.x);
   int32_t dy = std::abs(current.y - target.y);
   int32_t mn = (dx < dy) ? dx : dy;
@@ -33,8 +31,7 @@ OctileDistanceFP_TieBreak(Vec2i current, Vec2i target, Vec2i start) noexcept {
   return h + static_cast<int32_t>(cross >> 6);
 }
 
-[[nodiscard]] HALO_INLINE int32_t
-GetDynamicWeightFP(int32_t startDist, int32_t h) noexcept {
+[[nodiscard]] HALO_INLINE int32_t GetDynamicWeightFP(int32_t startDist, int32_t h) noexcept {
   if (startDist <= 0) return 1024;
   return 1024 + static_cast<int32_t>(static_cast<int64_t>(Config::WEIGHT_MUL) * 1024 * h / startDist);
 }
@@ -81,4 +78,4 @@ GetDynamicWeightFP(int32_t startDist, int32_t h) noexcept {
   return true;
 }
 
-} // namespace halo::math
+}  // namespace halo::math

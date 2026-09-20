@@ -35,12 +35,12 @@ namespace halo::test {
 // ============================================================================
 
 template <typename T>
-[[gnu::always_inline]] inline void DoNotOptimize(T const& val) {
+[[gnu::always_inline]] inline void DoNotOptimize(T const &val) {
   asm volatile("" : : "g"(val) : "memory");
 }
 
 template <typename T>
-[[gnu::always_inline]] inline void DoNotOptimize(T& val) {
+[[gnu::always_inline]] inline void DoNotOptimize(T &val) {
   asm volatile("" : "+m"(val) : : "memory");
 }
 
@@ -57,9 +57,7 @@ template <typename T>
   return static_cast<uint64_t>(ts.tv_sec) * 1000000000ULL + ts.tv_nsec;
 #else
   return static_cast<uint64_t>(
-      std::chrono::duration_cast<std::chrono::nanoseconds>(
-          std::chrono::steady_clock::now().time_since_epoch())
-          .count());
+      std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count());
 #endif
 }
 
@@ -110,7 +108,8 @@ struct LatencyStats {
     s.p99Us = static_cast<double>(durationsNs[durationsNs.size() * 99 / 100]) / 1000.0;
     s.p999Us = static_cast<double>(durationsNs[durationsNs.size() * 999 / 1000]) / 1000.0;
     uint64_t sumNs = 0;
-    for (uint32_t d : durationsNs) sumNs += d;
+    for (uint32_t d : durationsNs)
+      sumNs += d;
     s.meanUs = (static_cast<double>(sumNs) / static_cast<double>(durationsNs.size())) / 1000.0;
     return s;
   }
@@ -334,7 +333,7 @@ void TestOptimalAndAnyAnglePathfinding() {
   assert(denseRes.found && denseRes.stepCount > optRes.len && "Dense path must expand intermediate tiles");
 
   // 4. Test Nearest Walkable Fallback (Unreachable Destination Protection)
-  Vec2i blockedTarget(30, 5); // Inside the wall
+  Vec2i blockedTarget(30, 5);  // Inside the wall
   PathResult fallbackRes = engine.RouteGrid(Vec2i(5, 5), blockedTarget);
   assert(fallbackRes.found && "Must snap to nearest walkable tile and find path");
   assert(grid.IsWalkable(fallbackRes.route[fallbackRes.len - 1].x, fallbackRes.route[fallbackRes.len - 1].y));
@@ -401,7 +400,7 @@ void RunRaycastThroughputBenchmark() {
   constexpr uint64_t WARMUP = 20000;
   constexpr uint64_t TOTAL_RAYS = 100000;
   constexpr uint64_t RAYS_PER_ROW = 32;
-  constexpr uint64_t NUM_ROWS = TOTAL_RAYS / RAYS_PER_ROW; // 3125 rows
+  constexpr uint64_t NUM_ROWS = TOTAL_RAYS / RAYS_PER_ROW;  // 3125 rows
 
   uint64_t checksum = 0;
   for (uint64_t i = 0; i < WARMUP; ++i) {
@@ -422,12 +421,40 @@ void RunRaycastThroughputBenchmark() {
       int32_t y = static_cast<int32_t>((i * 7) & 63);
       uint64_t row = aegis.GetShadowRow(y);
 
-      #define R(offset) trialChecksum += omnicontext::AdaptiveOmniEngine::RaycastRow(row, offset)
-      R(0);  R(1);  R(2);  R(3);  R(4);  R(5);  R(6);  R(7);
-      R(8);  R(9);  R(10); R(11); R(12); R(13); R(14); R(15);
-      R(16); R(17); R(18); R(19); R(20); R(21); R(22); R(23);
-      R(24); R(25); R(26); R(27); R(28); R(29); R(30); R(31);
-      #undef R
+#define R(offset) trialChecksum += omnicontext::AdaptiveOmniEngine::RaycastRow(row, offset)
+      R(0);
+      R(1);
+      R(2);
+      R(3);
+      R(4);
+      R(5);
+      R(6);
+      R(7);
+      R(8);
+      R(9);
+      R(10);
+      R(11);
+      R(12);
+      R(13);
+      R(14);
+      R(15);
+      R(16);
+      R(17);
+      R(18);
+      R(19);
+      R(20);
+      R(21);
+      R(22);
+      R(23);
+      R(24);
+      R(25);
+      R(26);
+      R(27);
+      R(28);
+      R(29);
+      R(30);
+      R(31);
+#undef R
     }
 
     uint64_t end = GetHardwareNanos();
@@ -453,7 +480,8 @@ void RunRaycastThroughputBenchmark() {
 
   std::printf("  Iterations Evaluated   : %llu calls\n", (unsigned long long)TOTAL_RAYS);
   std::printf("  Hardware Sink Checksum : %llu\n", (unsigned long long)finalChecksum);
-  std::printf("  Best Elapsed Time      : %llu ns (%.3f ms)\n", (unsigned long long)bestElapsedNs, bestElapsedNs / 1e6);
+  std::printf("  Best Elapsed Time      : %llu ns (%.3f ms)\n", (unsigned long long)bestElapsedNs,
+              static_cast<double>(bestElapsedNs) / 1e6);
   std::printf("  Average Raycast Latency: %.4f ns / op\n", bestAvgNs);
   std::printf("  Throughput             : %.2f Million Ops / sec\n", mops);
 
@@ -621,12 +649,14 @@ void RunDynamicAvoidanceBenchmark() {
 
   // Build Flight Maze (Wide horizontal corridors and alternating gates)
   for (int32_t x = 0; x < MAP_W; ++x) {
-    grid.SetObstacle(x, 0); grid.SetObstacle(x, MAP_H - 1);
+    grid.SetObstacle(x, 0);
+    grid.SetObstacle(x, MAP_H - 1);
     hazardMatrix.SetBit(swar::Layer::STATIC_WALLS, x, 0);
     hazardMatrix.SetBit(swar::Layer::STATIC_WALLS, x, MAP_H - 1);
   }
   for (int32_t y = 0; y < MAP_H; ++y) {
-    grid.SetObstacle(0, y); grid.SetObstacle(MAP_W - 1, y);
+    grid.SetObstacle(0, y);
+    grid.SetObstacle(MAP_W - 1, y);
     hazardMatrix.SetBit(swar::Layer::STATIC_WALLS, 0, y);
     hazardMatrix.SetBit(swar::Layer::STATIC_WALLS, MAP_W - 1, y);
   }
@@ -663,8 +693,7 @@ void RunDynamicAvoidanceBenchmark() {
 
   flight::HierarchicalFlightEngine<MAP_W, MAP_H> flightEngine;
   flightEngine.InitFlight(Vec2f(static_cast<float>(startTile.x), static_cast<float>(startTile.y)),
-                          Vec2f(static_cast<float>(goalTile.x), static_cast<float>(goalTile.y)),
-                          macroRoute);
+                          Vec2f(static_cast<float>(goalTile.x), static_cast<float>(goalTile.y)), macroRoute);
 
   constexpr float DT = 0.01f;
   constexpr size_t TOTAL_STEPS = 5000;
@@ -778,7 +807,7 @@ void Run2048x2048StressTest() {
   std::printf("  STATUS                    : \033[32mPASSED (Zero heap allocation, 2048x2048 stress verified)\033[0m\n");
 }
 
-} // namespace halo::test
+}  // namespace halo::test
 
 // ============================================================================
 // MAIN EXECUTION ENTRY POINT

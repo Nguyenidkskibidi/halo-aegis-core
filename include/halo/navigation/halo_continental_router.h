@@ -157,10 +157,8 @@ public:
     // Connect intra-cluster portals with edges
     for (int32_t i = 0; i < m_portalCount; ++i) {
       for (int32_t j = i + 1; j < m_portalCount; ++j) {
-        if (m_portals[i].clusterA == m_portals[j].clusterA ||
-            m_portals[i].clusterA == m_portals[j].clusterB ||
-            m_portals[i].clusterB == m_portals[j].clusterA ||
-            m_portals[i].clusterB == m_portals[j].clusterB) {
+        if (m_portals[i].clusterA == m_portals[j].clusterA || m_portals[i].clusterA == m_portals[j].clusterB ||
+            m_portals[i].clusterB == m_portals[j].clusterA || m_portals[i].clusterB == m_portals[j].clusterB) {
           int32_t dx = m_portals[i].mx - m_portals[j].mx;
           int32_t dy = m_portals[i].my - m_portals[j].my;
           int32_t dist = static_cast<int32_t>(std::sqrt(dx * dx + dy * dy));
@@ -184,8 +182,8 @@ public:
   }
 
   // Ultra-Low-Latency Trans-National Macro Routing (< 40 µs P99)
-  [[nodiscard]] TransContinentalRoute FindTransNationalPath(double startWorldX, double startWorldY,
-                                                           double goalWorldX, double goalWorldY) noexcept {
+  [[nodiscard]] TransContinentalRoute FindTransNationalPath(double startWorldX, double startWorldY, double goalWorldX,
+                                                            double goalWorldY) noexcept {
     TransContinentalRoute route;
     int32_t smx = MetricToMacroX(startWorldX);
     int32_t smy = MetricToMacroY(startWorldY);
@@ -291,11 +289,9 @@ public:
       for (int32_t i = 0; i < count; ++i) {
         int32_t nodeIdx = tempWaypoints[count - 1 - i];
         if (nodeIdx == startNode) {
-          route.waypoints[i] = MacroWaypoint{static_cast<int32_t>(startWorldX),
-                                             static_cast<int32_t>(startWorldY)};
+          route.waypoints[i] = MacroWaypoint{static_cast<int32_t>(startWorldX), static_cast<int32_t>(startWorldY)};
         } else if (nodeIdx == goalNode) {
-          route.waypoints[i] = MacroWaypoint{static_cast<int32_t>(goalWorldX),
-                                             static_cast<int32_t>(goalWorldY)};
+          route.waypoints[i] = MacroWaypoint{static_cast<int32_t>(goalWorldX), static_cast<int32_t>(goalWorldY)};
         } else {
           route.waypoints[i] = MacroWaypoint{static_cast<int32_t>(MacroToMetricX(m_portals[nodeIdx].mx)),
                                              static_cast<int32_t>(MacroToMetricY(m_portals[nodeIdx].my))};
@@ -315,4 +311,4 @@ public:
   }
 };
 
-} // namespace halo::continental
+}  // namespace halo::continental

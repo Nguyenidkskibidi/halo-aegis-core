@@ -15,12 +15,12 @@ namespace halo::kinodynamics {
 // ============================================================================
 
 struct alignas(16) KinodynamicLimits {
-  float maxVelocity = 8.0f;     // m/s
-  float maxAcceleration = 4.0f; // m/s^2
-  float maxJerk = 15.0f;        // m/s^3
-  float maxCurvature = 2.0f;    // 1/m (min turn radius = 0.5m)
-  float nominalSpeed = 4.0f;    // m/s
-  float minSegmentDuration = 0.1f; // seconds
+  float maxVelocity = 8.0f;         // m/s
+  float maxAcceleration = 4.0f;     // m/s^2
+  float maxJerk = 15.0f;            // m/s^3
+  float maxCurvature = 2.0f;        // 1/m (min turn radius = 0.5m)
+  float nominalSpeed = 4.0f;        // m/s
+  float minSegmentDuration = 0.1f;  // seconds
 };
 
 struct alignas(16) TrajectoryPoint {
@@ -68,21 +68,15 @@ struct alignas(32) QuinticPolynomial1D {
     c5 = 6.0f * D * invT5 - 3.0f * V * invT4 + 0.5f * A * invT3;
   }
 
-  [[nodiscard]] HALO_INLINE float Pos(float t) const noexcept {
-    return c0 + t * (c1 + t * (c2 + t * (c3 + t * (c4 + t * c5))));
-  }
+  [[nodiscard]] HALO_INLINE float Pos(float t) const noexcept { return c0 + t * (c1 + t * (c2 + t * (c3 + t * (c4 + t * c5)))); }
 
   [[nodiscard]] HALO_INLINE float Vel(float t) const noexcept {
     return c1 + t * (2.0f * c2 + t * (3.0f * c3 + t * (4.0f * c4 + 5.0f * c5 * t)));
   }
 
-  [[nodiscard]] HALO_INLINE float Acc(float t) const noexcept {
-    return 2.0f * c2 + t * (6.0f * c3 + t * (12.0f * c4 + 20.0f * c5 * t));
-  }
+  [[nodiscard]] HALO_INLINE float Acc(float t) const noexcept { return 2.0f * c2 + t * (6.0f * c3 + t * (12.0f * c4 + 20.0f * c5 * t)); }
 
-  [[nodiscard]] HALO_INLINE float Jerk(float t) const noexcept {
-    return 6.0f * c3 + t * (24.0f * c4 + 60.0f * c5 * t);
-  }
+  [[nodiscard]] HALO_INLINE float Jerk(float t) const noexcept { return 6.0f * c3 + t * (24.0f * c4 + 60.0f * c5 * t); }
 };
 
 struct alignas(64) QuinticSegment2D {
@@ -148,9 +142,7 @@ public:
     }
   }
 
-  [[nodiscard]] HALO_INLINE const QuinticSegment2D &GetSegment(int32_t i) const noexcept {
-    return m_segments[i];
-  }
+  [[nodiscard]] HALO_INLINE const QuinticSegment2D &GetSegment(int32_t i) const noexcept { return m_segments[i]; }
 
   // Evaluates trajectory point in O(log N) or fast linear scan (< 20 ns)
   [[nodiscard]] HALO_INLINE TrajectoryPoint Evaluate(float t) const noexcept {
@@ -172,11 +164,8 @@ public:
 // Transforms discrete waypoints into continuous C^3 quintic polynomials in < 800 ns.
 // ============================================================================
 
-[[gnu::hot]] inline bool GenerateQuinticTrajectory(
-    const Vec2f *HALO_RESTRICT waypoints,
-    int32_t waypointCount,
-    const KinodynamicLimits &limits,
-    KinodynamicTrajectory &outTraj) noexcept {
+[[gnu::hot]] inline bool GenerateQuinticTrajectory(const Vec2f *HALO_RESTRICT waypoints, int32_t waypointCount,
+                                                   const KinodynamicLimits &limits, KinodynamicTrajectory &outTraj) noexcept {
   outTraj.Clear();
   if (HALO_UNLIKELY(!waypoints || waypointCount < 2)) return false;
 
@@ -219,9 +208,7 @@ public:
   for (int32_t i = 0; i < segCount; ++i) {
     float T = segmentDurations[i];
     QuinticSegment2D seg;
-    seg.Solve(waypoints[i], velocities[i], accelerations[i],
-              waypoints[i + 1], velocities[i + 1], accelerations[i + 1],
-              T, cumulativeTime);
+    seg.Solve(waypoints[i], velocities[i], accelerations[i], waypoints[i + 1], velocities[i + 1], accelerations[i + 1], T, cumulativeTime);
 
     // Fast check: sample mid-point and limits
     TrajectoryPoint mid = seg.Evaluate(cumulativeTime + 0.5f * T);
@@ -229,9 +216,8 @@ public:
       // Dilate time by scaling factor to ensure motor feasibility
       float dilation = std::max(mid.speed / limits.maxVelocity, 1.2f);
       T *= dilation;
-      seg.Solve(waypoints[i], velocities[i], accelerations[i],
-                waypoints[i + 1], velocities[i + 1], accelerations[i + 1],
-                T, cumulativeTime);
+      seg.Solve(waypoints[i], velocities[i], accelerations[i], waypoints[i + 1], velocities[i + 1], accelerations[i + 1], T,
+                cumulativeTime);
     }
 
     outTraj.AddSegment(seg);
@@ -242,11 +228,8 @@ public:
 }
 
 // Overload for integer discrete waypoints from JPS+
-inline bool GenerateQuinticTrajectory(
-    const Vec2i *HALO_RESTRICT waypoints,
-    int32_t waypointCount,
-    const KinodynamicLimits &limits,
-    KinodynamicTrajectory &outTraj) noexcept {
+inline bool GenerateQuinticTrajectory(const Vec2i *HALO_RESTRICT waypoints, int32_t waypointCount, const KinodynamicLimits &limits,
+                                      KinodynamicTrajectory &outTraj) noexcept {
   if (HALO_UNLIKELY(!waypoints || waypointCount < 2)) return false;
 
   Vec2f continuousWaypoints[KinodynamicTrajectory::MAX_SEGMENTS + 1];
@@ -262,18 +245,14 @@ inline bool GenerateQuinticTrajectory(
 // ============================================================================
 
 struct alignas(8) ControlCommand {
-  float linearVelocity = 0.0f;  // m/s
-  float angularVelocity = 0.0f; // rad/s
+  float linearVelocity = 0.0f;   // m/s
+  float angularVelocity = 0.0f;  // rad/s
 };
 
 // 1. Pure Pursuit Tracker: Computes instantaneous (v, omega) steering in < 30 ns
-[[nodiscard]] HALO_INLINE ControlCommand EvaluatePurePursuit(
-    Vec2f currentPos,
-    float currentHeading,
-    const KinodynamicTrajectory &traj,
-    float currentTime,
-    float lookaheadDistance = 1.0f,
-    float targetSpeed = 4.0f) noexcept {
+[[nodiscard]] HALO_INLINE ControlCommand EvaluatePurePursuit(Vec2f currentPos, float currentHeading, const KinodynamicTrajectory &traj,
+                                                             float currentTime, float lookaheadDistance = 1.0f,
+                                                             float targetSpeed = 4.0f) noexcept {
   ControlCommand cmd;
   if (HALO_UNLIKELY(traj.SegmentCount() == 0)) return cmd;
 
@@ -297,14 +276,9 @@ struct alignas(8) ControlCommand {
 }
 
 // 2. Stanley Controller: Front-axle cross-track error + heading alignment in < 35 ns
-[[nodiscard]] HALO_INLINE ControlCommand EvaluateStanley(
-    Vec2f frontAxlePos,
-    float currentHeading,
-    float currentSpeed,
-    const KinodynamicTrajectory &traj,
-    float currentTime,
-    float kGain = 1.5f,
-    float targetSpeed = 4.0f) noexcept {
+[[nodiscard]] HALO_INLINE ControlCommand EvaluateStanley(Vec2f frontAxlePos, float currentHeading, float currentSpeed,
+                                                         const KinodynamicTrajectory &traj, float currentTime, float kGain = 1.5f,
+                                                         float targetSpeed = 4.0f) noexcept {
   ControlCommand cmd;
   if (HALO_UNLIKELY(traj.SegmentCount() == 0)) return cmd;
 
@@ -334,4 +308,4 @@ struct alignas(8) ControlCommand {
   return cmd;
 }
 
-} // namespace halo::kinodynamics
+}  // namespace halo::kinodynamics

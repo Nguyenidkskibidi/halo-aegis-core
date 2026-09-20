@@ -97,7 +97,8 @@ public:
     }
   }
 
-  [[gnu::noinline]] [[gnu::cold]] void BootSystemWithBuffer(GridT<W, H> *grid, urban::CityMap *cityMap, void *buffer, size_t bufferSize) noexcept {
+  [[gnu::noinline]] [[gnu::cold]] void BootSystemWithBuffer(GridT<W, H> *grid, urban::CityMap *cityMap, void *buffer,
+                                                            size_t bufferSize) noexcept {
     BootSystemWithBuffer(grid, buffer, bufferSize);
     m_cityMap = cityMap;
     if (m_cityMap) {
@@ -152,7 +153,7 @@ public:
     while (HALO_LIKELY(!m_gridHeap.Empty())) {
       int32_t cIdx = m_gridHeap.Pop();
       PathNode &cNode = m_gridNodes[cIdx];
-      cNode.state = 2; // Closed
+      cNode.state = 2;  // Closed
       res.expanded++;
 
       Vec2i cPos = ToVec(cIdx);
@@ -187,8 +188,7 @@ public:
             jumpSteps[numSteps++] = targetDistOnRay;
           }
         } else {
-          int32_t projDist = (dir.y == 0 && dir.x * diffX > 0) ? std::abs(diffX) :
-                             (dir.x == 0 && dir.y * diffY > 0) ? std::abs(diffY) : 0;
+          int32_t projDist = (dir.y == 0 && dir.x * diffX > 0) ? std::abs(diffX) : (dir.x == 0 && dir.y * diffY > 0) ? std::abs(diffY) : 0;
           int32_t clearSteps = (jumpDist > 0) ? jumpDist : -jumpDist;
           if (projDist > 0 && projDist <= clearSteps) {
             jumpSteps[numSteps++] = projDist;
@@ -274,9 +274,7 @@ public:
     Vec2i pulled[Config::MAX_PATH_LEN];
     int32_t pulledCount = postprocess::StringPullGridPath(
         raw.route, raw.len, pulled, Config::MAX_PATH_LEN,
-        [this](Vec2i a, Vec2i b) noexcept {
-          return math::HasLineOfSight(*reinterpret_cast<const Grid *>(this->m_grid), a, b);
-        });
+        [this](Vec2i a, Vec2i b) noexcept { return math::HasLineOfSight(*reinterpret_cast<const Grid *>(this->m_grid), a, b); });
 
     cRes.found = true;
     cRes.len = pulledCount;
@@ -330,11 +328,9 @@ public:
   }
 
   // 6. Kinodynamic Continuous Quintic Trajectory Synthesis (< 800 ns, C^3 continuous)
-  [[nodiscard]] HALO_INLINE PathResult RouteKinodynamic(
-      Vec2i start, Vec2i target,
-      const kinodynamics::KinodynamicLimits &limits,
-      kinodynamics::KinodynamicTrajectory &outTraj,
-      RoutingMode mode = RoutingMode::Turbo) noexcept {
+  [[nodiscard]] HALO_INLINE PathResult RouteKinodynamic(Vec2i start, Vec2i target, const kinodynamics::KinodynamicLimits &limits,
+                                                        kinodynamics::KinodynamicTrajectory &outTraj,
+                                                        RoutingMode mode = RoutingMode::Turbo) noexcept {
     PathResult res = RouteGrid(start, target, mode);
     if (!res.found || res.len <= 0) {
       outTraj.Clear();
@@ -344,9 +340,7 @@ public:
     Vec2i pulled[Config::MAX_PATH_LEN];
     int32_t pulledCount = postprocess::StringPullGridPath(
         res.route, res.len, pulled, Config::MAX_PATH_LEN,
-        [this](Vec2i a, Vec2i b) noexcept {
-          return math::HasLineOfSight(*reinterpret_cast<const Grid *>(this->m_grid), a, b);
-        });
+        [this](Vec2i a, Vec2i b) noexcept { return math::HasLineOfSight(*reinterpret_cast<const Grid *>(this->m_grid), a, b); });
 
     Vec2f waypoints[Config::MAX_PATH_LEN];
     for (int32_t i = 0; i < pulledCount; ++i) {
@@ -362,9 +356,7 @@ public:
     return m_apspRouter.RouteO1(startNode, targetNode);
   }
 
-  void FlushMemory() noexcept {
-    m_masterArena.Reset();
-  }
+  void FlushMemory() noexcept { m_masterArena.Reset(); }
 
 private:
   HALO_INLINE void InitGridNode(int32_t i) noexcept {
@@ -400,4 +392,4 @@ using EmbeddedSupremeEngine32 = HaloSupremeEngineT<32, 32>;
 using EmbeddedSupremeEngine64 = HaloSupremeEngineT<64, 64>;
 using EmbeddedSupremeEngine128 = HaloSupremeEngineT<128, 128>;
 
-} // namespace halo::core
+}  // namespace halo::core

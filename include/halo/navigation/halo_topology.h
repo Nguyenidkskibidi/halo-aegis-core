@@ -42,17 +42,11 @@ public:
     }
   }
 
-  [[nodiscard]] HALO_INLINE bool InBounds(HexCoord c) const noexcept {
-    return c.q >= 0 && c.q < m_qMax && c.r >= 0 && c.r < m_rMax;
-  }
+  [[nodiscard]] HALO_INLINE bool InBounds(HexCoord c) const noexcept { return c.q >= 0 && c.q < m_qMax && c.r >= 0 && c.r < m_rMax; }
 
-  [[nodiscard]] HALO_INLINE int32_t ToIndex(HexCoord c) const noexcept {
-    return c.r * m_qMax + c.q;
-  }
+  [[nodiscard]] HALO_INLINE int32_t ToIndex(HexCoord c) const noexcept { return c.r * m_qMax + c.q; }
 
-  [[nodiscard]] HALO_INLINE HexCoord ToCoord(int32_t idx) const noexcept {
-    return HexCoord{idx % m_qMax, idx / m_qMax};
-  }
+  [[nodiscard]] HALO_INLINE HexCoord ToCoord(int32_t idx) const noexcept { return HexCoord{idx % m_qMax, idx / m_qMax}; }
 
   [[nodiscard]] HALO_INLINE bool IsWalkable(HexCoord c) const noexcept {
     if (HALO_UNLIKELY(!InBounds(c) || !m_walkable)) return false;
@@ -177,7 +171,7 @@ public:
 struct VerticalLink {
   FloorCoord from;
   FloorCoord to;
-  int32_t costFP = Config::FP_MULT * 2; // Extra transition penalty for stairs
+  int32_t costFP = Config::FP_MULT * 2;  // Extra transition penalty for stairs
 };
 
 struct MultiFloorPathResult {
@@ -210,9 +204,7 @@ public:
     m_linkCount = 0;
   }
 
-  [[nodiscard]] HALO_INLINE int32_t ToIndex(FloorCoord c) const noexcept {
-    return c.floor * CELLS_PER_FLOOR + c.y * W + c.x;
-  }
+  [[nodiscard]] HALO_INLINE int32_t ToIndex(FloorCoord c) const noexcept { return c.floor * CELLS_PER_FLOOR + c.y * W + c.x; }
 
   [[nodiscard]] HALO_INLINE FloorCoord ToCoord(int32_t idx) const noexcept {
     int32_t floor = idx / CELLS_PER_FLOOR;
@@ -265,8 +257,8 @@ public:
     m_heap.Init(cap, m_nodes, arena);
   }
 
-  [[gnu::cold]] [[gnu::noinline]] MultiFloorPathResult FindPath(const MultiFloorGraph<W, H, MAX_FLOORS> &graph,
-                               FloorCoord start, FloorCoord goal) noexcept {
+  [[gnu::cold]] [[gnu::noinline]] MultiFloorPathResult FindPath(const MultiFloorGraph<W, H, MAX_FLOORS> &graph, FloorCoord start,
+                                                                FloorCoord goal) noexcept {
     MultiFloorPathResult res;
     if (!graph.IsWalkable(start) || !graph.IsWalkable(goal)) return res;
     if (start == goal) {
@@ -348,9 +340,7 @@ public:
 
       // 1. Planar 8-way movement on current floor
       for (int32_t i = 0; i < 8; ++i) {
-        FloorCoord nCoord{cCoord.x + Direction::Offsets[i].x,
-                          cCoord.y + Direction::Offsets[i].y,
-                          cCoord.floor};
+        FloorCoord nCoord{cCoord.x + Direction::Offsets[i].x, cCoord.y + Direction::Offsets[i].y, cCoord.floor};
         if (graph.IsWalkable(nCoord)) {
           RelaxNode(cIdx, graph.ToIndex(nCoord), Direction::CostFP[i], nCoord);
         }
@@ -360,8 +350,7 @@ public:
       const int32_t numLinks = graph.GetLinkCount();
       const VerticalLink *links = graph.GetLinks();
       for (int32_t l = 0; l < numLinks; ++l) {
-        FloorCoord target = (links[l].from == cCoord) ? links[l].to :
-                            (links[l].to == cCoord) ? links[l].from : FloorCoord{-1, -1, -1};
+        FloorCoord target = (links[l].from == cCoord) ? links[l].to : (links[l].to == cCoord) ? links[l].from : FloorCoord{-1, -1, -1};
         if (target.x >= 0 && graph.IsWalkable(target)) {
           RelaxNode(cIdx, graph.ToIndex(target), links[l].costFP, target);
         }
@@ -397,13 +386,9 @@ public:
     return x >= 0 && x < VX && y >= 0 && y < VY && z >= 0 && z < VZ;
   }
 
-  [[nodiscard]] HALO_INLINE bool InBounds(VoxelCoord v) const noexcept {
-    return InBounds(v.x, v.y, v.z);
-  }
+  [[nodiscard]] HALO_INLINE bool InBounds(VoxelCoord v) const noexcept { return InBounds(v.x, v.y, v.z); }
 
-  [[nodiscard]] HALO_INLINE int32_t ToIndex(int32_t x, int32_t y, int32_t z) const noexcept {
-    return (z * VY + y) * VX + x;
-  }
+  [[nodiscard]] HALO_INLINE int32_t ToIndex(int32_t x, int32_t y, int32_t z) const noexcept { return (z * VY + y) * VX + x; }
 
   [[nodiscard]] HALO_INLINE bool IsVoxelSolid(int32_t x, int32_t y, int32_t z) const noexcept {
     if (HALO_UNLIKELY(!InBounds(x, y, z) || !m_bits)) return true;
@@ -411,9 +396,7 @@ public:
     return (m_bits[idx >> 6] & (1ULL << (idx & 63))) != 0;
   }
 
-  [[nodiscard]] HALO_INLINE bool IsVoxelSolid(VoxelCoord v) const noexcept {
-    return IsVoxelSolid(v.x, v.y, v.z);
-  }
+  [[nodiscard]] HALO_INLINE bool IsVoxelSolid(VoxelCoord v) const noexcept { return IsVoxelSolid(v.x, v.y, v.z); }
 
   HALO_INLINE void SetSolid(int32_t x, int32_t y, int32_t z, bool solid = true) noexcept {
     if (HALO_LIKELY(InBounds(x, y, z) && m_bits)) {
@@ -458,7 +441,7 @@ public:
         if (outHitPos) {
           *outHitPos = start + dir * tCurrent;
         }
-        return false; // Hit solid
+        return false;  // Hit solid
       }
 
       if (tMaxX < tMaxY) {
@@ -483,8 +466,8 @@ public:
         }
       }
     }
-    return true; // Clear line of sight
+    return true;  // Clear line of sight
   }
 };
 
-} // namespace halo::topology
+}  // namespace halo::topology

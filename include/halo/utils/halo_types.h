@@ -7,10 +7,10 @@
 #include <cstring>
 
 #if defined(__has_include)
-  #if __has_include(<bit>) && __cplusplus >= 202002L
-    #include <bit>
-    #define HALO_HAS_STD_BIT 1
-  #endif
+#if __has_include(<bit>) && __cplusplus >= 202002L
+#include <bit>
+#define HALO_HAS_STD_BIT 1
+#endif
 #endif
 
 #if defined(_MSC_VER)
@@ -50,17 +50,17 @@
 // DUAL-TIER HARDWARE EXECUTION PROFILES (MICRO TO BEAST)
 // ============================================================================
 #if defined(HALO_PROFILE_MICRO)
-  // Microcontroller Profile (ESP32, STM32, RP2040, Cortex-M4/M7, RISC-V 32)
-  // Strictly < 64 KB RAM envelope, pure 32-bit Q16.16 fixed-point math, 0 dynamic allocations
-  #define HALO_MAX_GRID_DIM 64
-  #define HALO_TARGET_IS_MICRO 1
+// Microcontroller Profile (ESP32, STM32, RP2040, Cortex-M4/M7, RISC-V 32)
+// Strictly < 64 KB RAM envelope, pure 32-bit Q16.16 fixed-point math, 0 dynamic allocations
+#define HALO_MAX_GRID_DIM 64
+#define HALO_TARGET_IS_MICRO 1
 #elif defined(HALO_PROFILE_BEAST) || defined(__aarch64__) || defined(__x86_64__) || defined(_M_X64) || defined(_M_ARM64)
-  // High-Performance Beast Profile (Apple Silicon, Intel/AMD x86_64, NVIDIA Jetson Orin)
-  // Multi-megabyte portal clipmaps, AVX2/AVX-512 & ARM NEON quad-vector acceleration
-  #define HALO_MAX_GRID_DIM 2048
-  #define HALO_TARGET_IS_BEAST 1
+// High-Performance Beast Profile (Apple Silicon, Intel/AMD x86_64, NVIDIA Jetson Orin)
+// Multi-megabyte portal clipmaps, AVX2/AVX-512 & ARM NEON quad-vector acceleration
+#define HALO_MAX_GRID_DIM 2048
+#define HALO_TARGET_IS_BEAST 1
 #else
-  #define HALO_MAX_GRID_DIM 512
+#define HALO_MAX_GRID_DIM 512
 #endif
 
 namespace halo {
@@ -92,7 +92,10 @@ namespace bits {
 #else
   if (v == 0) return 64;
   int32_t c = 0;
-  while ((v & 1) == 0) { v >>= 1; ++c; }
+  while ((v & 1) == 0) {
+    v >>= 1;
+    ++c;
+  }
   return c;
 #endif
 }
@@ -108,12 +111,15 @@ namespace bits {
 #else
   if (v == 0) return 64;
   int32_t c = 0;
-  while ((v & (1ULL << 63)) == 0) { v <<= 1; ++c; }
+  while ((v & (1ULL << 63)) == 0) {
+    v <<= 1;
+    ++c;
+  }
   return c;
 #endif
 }
 
-} // namespace bits
+}  // namespace bits
 
 // Compile-Time Microarchitectural Geometry Helpers
 constexpr bool IsPowerOfTwo(uint32_t n) noexcept {
@@ -155,21 +161,11 @@ struct Vec2i {
   constexpr Vec2i() noexcept : x(0), y(0) {}
   constexpr Vec2i(int32_t x_, int32_t y_) noexcept : x(x_), y(y_) {}
 
-  [[nodiscard]] constexpr bool operator==(const Vec2i &o) const noexcept {
-    return x == o.x && y == o.y;
-  }
-  [[nodiscard]] constexpr bool operator!=(const Vec2i &o) const noexcept {
-    return !(*this == o);
-  }
-  [[nodiscard]] constexpr Vec2i operator+(const Vec2i &o) const noexcept {
-    return {x + o.x, y + o.y};
-  }
-  [[nodiscard]] constexpr Vec2i operator-(const Vec2i &o) const noexcept {
-    return {x - o.x, y - o.y};
-  }
-  [[nodiscard]] constexpr Vec2i operator*(int32_t s) const noexcept {
-    return {x * s, y * s};
-  }
+  [[nodiscard]] constexpr bool operator==(const Vec2i &o) const noexcept { return x == o.x && y == o.y; }
+  [[nodiscard]] constexpr bool operator!=(const Vec2i &o) const noexcept { return !(*this == o); }
+  [[nodiscard]] constexpr Vec2i operator+(const Vec2i &o) const noexcept { return {x + o.x, y + o.y}; }
+  [[nodiscard]] constexpr Vec2i operator-(const Vec2i &o) const noexcept { return {x - o.x, y - o.y}; }
+  [[nodiscard]] constexpr Vec2i operator*(int32_t s) const noexcept { return {x * s, y * s}; }
   constexpr Vec2i &operator+=(const Vec2i &o) noexcept {
     x += o.x;
     y += o.y;
@@ -188,30 +184,15 @@ struct Vec2f {
 
   constexpr Vec2f() noexcept = default;
   constexpr Vec2f(float x_, float y_) noexcept : x(x_), y(y_) {}
-  constexpr explicit Vec2f(const Vec2i &v) noexcept
-      : x(static_cast<float>(v.x)), y(static_cast<float>(v.y)) {}
+  constexpr explicit Vec2f(const Vec2i &v) noexcept : x(static_cast<float>(v.x)), y(static_cast<float>(v.y)) {}
 
-  [[nodiscard]] constexpr bool operator==(const Vec2f &o) const noexcept {
-    return x == o.x && y == o.y;
-  }
-  [[nodiscard]] constexpr bool operator!=(const Vec2f &o) const noexcept {
-    return !(*this == o);
-  }
-  [[nodiscard]] constexpr Vec2f operator+(const Vec2f &o) const noexcept {
-    return {x + o.x, y + o.y};
-  }
-  [[nodiscard]] constexpr Vec2f operator-(const Vec2f &o) const noexcept {
-    return {x - o.x, y - o.y};
-  }
-  [[nodiscard]] constexpr Vec2f operator-() const noexcept {
-    return {-x, -y};
-  }
-  [[nodiscard]] constexpr Vec2f operator*(float s) const noexcept {
-    return {x * s, y * s};
-  }
-  [[nodiscard]] constexpr Vec2f operator/(float s) const noexcept {
-    return {x / s, y / s};
-  }
+  [[nodiscard]] constexpr bool operator==(const Vec2f &o) const noexcept { return x == o.x && y == o.y; }
+  [[nodiscard]] constexpr bool operator!=(const Vec2f &o) const noexcept { return !(*this == o); }
+  [[nodiscard]] constexpr Vec2f operator+(const Vec2f &o) const noexcept { return {x + o.x, y + o.y}; }
+  [[nodiscard]] constexpr Vec2f operator-(const Vec2f &o) const noexcept { return {x - o.x, y - o.y}; }
+  [[nodiscard]] constexpr Vec2f operator-() const noexcept { return {-x, -y}; }
+  [[nodiscard]] constexpr Vec2f operator*(float s) const noexcept { return {x * s, y * s}; }
+  [[nodiscard]] constexpr Vec2f operator/(float s) const noexcept { return {x / s, y / s}; }
 
   constexpr Vec2f &operator+=(const Vec2f &o) noexcept {
     x += o.x;
@@ -229,24 +210,16 @@ struct Vec2f {
     return *this;
   }
 
-  [[nodiscard]] float LengthSq() const noexcept {
-    return x * x + y * y;
-  }
-  [[nodiscard]] float Length() const noexcept {
-    return std::sqrt(LengthSq());
-  }
+  [[nodiscard]] float LengthSq() const noexcept { return x * x + y * y; }
+  [[nodiscard]] float Length() const noexcept { return std::sqrt(LengthSq()); }
 
   [[nodiscard]] Vec2f Normalized() const noexcept {
     float len = Length();
     return len > 1e-6f ? (*this / len) : Vec2f{0.0f, 0.0f};
   }
 
-  [[nodiscard]] constexpr float Dot(const Vec2f &o) const noexcept {
-    return x * o.x + y * o.y;
-  }
-  [[nodiscard]] constexpr float Cross(const Vec2f &o) const noexcept {
-    return x * o.y - y * o.x;
-  }
+  [[nodiscard]] constexpr float Dot(const Vec2f &o) const noexcept { return x * o.x + y * o.y; }
+  [[nodiscard]] constexpr float Cross(const Vec2f &o) const noexcept { return x * o.y - y * o.x; }
 
   [[nodiscard]] Vec2f Rotated(float radians) const noexcept {
     float c = std::cos(radians);
@@ -255,15 +228,16 @@ struct Vec2f {
   }
 
   [[nodiscard]] constexpr Vec2i ToVec2i() const noexcept {
-    return {static_cast<int32_t>(x >= 0.0f ? x + 0.5f : x - 0.5f),
-            static_cast<int32_t>(y >= 0.0f ? y + 0.5f : y - 0.5f)};
+    return {static_cast<int32_t>(x >= 0.0f ? x + 0.5f : x - 0.5f), static_cast<int32_t>(y >= 0.0f ? y + 0.5f : y - 0.5f)};
   }
 };
 
 [[nodiscard]] inline float AngleWrap(float rad) noexcept {
   constexpr float TWO_PI = 6.28318530717958647692f;
-  while (rad > 3.14159265358979323846f) rad -= TWO_PI;
-  while (rad < -3.14159265358979323846f) rad += TWO_PI;
+  while (rad > 3.14159265358979323846f)
+    rad -= TWO_PI;
+  while (rad < -3.14159265358979323846f)
+    rad += TWO_PI;
   return rad;
 }
 
@@ -279,53 +253,40 @@ struct Vec3f {
   constexpr Vec3f() noexcept = default;
   constexpr Vec3f(float x_, float y_, float z_) noexcept : x(x_), y(y_), z(z_) {}
 
-  [[nodiscard]] constexpr bool operator==(const Vec3f &o) const noexcept {
-    return x == o.x && y == o.y && z == o.z;
-  }
-  [[nodiscard]] constexpr bool operator!=(const Vec3f &o) const noexcept {
-    return !(*this == o);
-  }
-  [[nodiscard]] constexpr Vec3f operator+(const Vec3f &o) const noexcept {
-    return {x + o.x, y + o.y, z + o.z};
-  }
-  [[nodiscard]] constexpr Vec3f operator-(const Vec3f &o) const noexcept {
-    return {x - o.x, y - o.y, z - o.z};
-  }
-  [[nodiscard]] constexpr Vec3f operator-() const noexcept {
-    return {-x, -y, -z};
-  }
-  [[nodiscard]] constexpr Vec3f operator*(float s) const noexcept {
-    return {x * s, y * s, z * s};
-  }
-  [[nodiscard]] constexpr Vec3f operator/(float s) const noexcept {
-    return {x / s, y / s, z / s};
-  }
+  [[nodiscard]] constexpr bool operator==(const Vec3f &o) const noexcept { return x == o.x && y == o.y && z == o.z; }
+  [[nodiscard]] constexpr bool operator!=(const Vec3f &o) const noexcept { return !(*this == o); }
+  [[nodiscard]] constexpr Vec3f operator+(const Vec3f &o) const noexcept { return {x + o.x, y + o.y, z + o.z}; }
+  [[nodiscard]] constexpr Vec3f operator-(const Vec3f &o) const noexcept { return {x - o.x, y - o.y, z - o.z}; }
+  [[nodiscard]] constexpr Vec3f operator-() const noexcept { return {-x, -y, -z}; }
+  [[nodiscard]] constexpr Vec3f operator*(float s) const noexcept { return {x * s, y * s, z * s}; }
+  [[nodiscard]] constexpr Vec3f operator/(float s) const noexcept { return {x / s, y / s, z / s}; }
   constexpr Vec3f &operator+=(const Vec3f &o) noexcept {
-    x += o.x; y += o.y; z += o.z; return *this;
+    x += o.x;
+    y += o.y;
+    z += o.z;
+    return *this;
   }
   constexpr Vec3f &operator-=(const Vec3f &o) noexcept {
-    x -= o.x; y -= o.y; z -= o.z; return *this;
+    x -= o.x;
+    y -= o.y;
+    z -= o.z;
+    return *this;
   }
   constexpr Vec3f &operator*=(float s) noexcept {
-    x *= s; y *= s; z *= s; return *this;
+    x *= s;
+    y *= s;
+    z *= s;
+    return *this;
   }
 
-  [[nodiscard]] float LengthSq() const noexcept {
-    return x * x + y * y + z * z;
-  }
-  [[nodiscard]] float Length() const noexcept {
-    return std::sqrt(LengthSq());
-  }
+  [[nodiscard]] float LengthSq() const noexcept { return x * x + y * y + z * z; }
+  [[nodiscard]] float Length() const noexcept { return std::sqrt(LengthSq()); }
   [[nodiscard]] Vec3f Normalized() const noexcept {
     float len = Length();
     return len > 1e-6f ? (*this / len) : Vec3f{0.0f, 0.0f, 0.0f};
   }
-  [[nodiscard]] constexpr float Dot(const Vec3f &o) const noexcept {
-    return x * o.x + y * o.y + z * o.z;
-  }
-  [[nodiscard]] constexpr Vec3f Cross(const Vec3f &o) const noexcept {
-    return {y * o.z - z * o.y, z * o.x - x * o.z, x * o.y - y * o.x};
-  }
+  [[nodiscard]] constexpr float Dot(const Vec3f &o) const noexcept { return x * o.x + y * o.y + z * o.z; }
+  [[nodiscard]] constexpr Vec3f Cross(const Vec3f &o) const noexcept { return {y * o.z - z * o.y, z * o.x - x * o.z, x * o.y - y * o.x}; }
 };
 
 // Hexagonal Axial (q, r) and Cube (q, r, s) Coordinates
@@ -339,18 +300,10 @@ struct HexCoord {
 
   [[nodiscard]] constexpr int32_t S() const noexcept { return -q - r; }
 
-  [[nodiscard]] constexpr bool operator==(const HexCoord &o) const noexcept {
-    return q == o.q && r == o.r;
-  }
-  [[nodiscard]] constexpr bool operator!=(const HexCoord &o) const noexcept {
-    return !(*this == o);
-  }
-  [[nodiscard]] constexpr HexCoord operator+(const HexCoord &o) const noexcept {
-    return {q + o.q, r + o.r};
-  }
-  [[nodiscard]] constexpr HexCoord operator-(const HexCoord &o) const noexcept {
-    return {q - o.q, r - o.r};
-  }
+  [[nodiscard]] constexpr bool operator==(const HexCoord &o) const noexcept { return q == o.q && r == o.r; }
+  [[nodiscard]] constexpr bool operator!=(const HexCoord &o) const noexcept { return !(*this == o); }
+  [[nodiscard]] constexpr HexCoord operator+(const HexCoord &o) const noexcept { return {q + o.q, r + o.r}; }
+  [[nodiscard]] constexpr HexCoord operator-(const HexCoord &o) const noexcept { return {q - o.q, r - o.r}; }
 
   // Hex Manhattan distance: (|q| + |r| + |s|) / 2
   [[nodiscard]] constexpr int32_t DistanceTo(const HexCoord &o) const noexcept {
@@ -370,9 +323,7 @@ struct HexCoord {
   }
 };
 
-inline constexpr HexCoord HEX_NEIGHBOR_OFFSETS[6] = {
-    {1, 0}, {1, -1}, {0, -1}, {-1, 0}, {-1, 1}, {0, 1}
-};
+inline constexpr HexCoord HEX_NEIGHBOR_OFFSETS[6] = {{1, 0}, {1, -1}, {0, -1}, {-1, 0}, {-1, 1}, {0, 1}};
 
 inline constexpr HexCoord HexCoord::Neighbor(int32_t dir) const noexcept {
   return *this + HEX_NEIGHBOR_OFFSETS[dir % 6];
@@ -387,12 +338,8 @@ struct FloorCoord {
   constexpr FloorCoord() noexcept = default;
   constexpr FloorCoord(int32_t x_, int32_t y_, int32_t f_ = 0) noexcept : x(x_), y(y_), floor(f_) {}
 
-  [[nodiscard]] constexpr bool operator==(const FloorCoord &o) const noexcept {
-    return x == o.x && y == o.y && floor == o.floor;
-  }
-  [[nodiscard]] constexpr bool operator!=(const FloorCoord &o) const noexcept {
-    return !(*this == o);
-  }
+  [[nodiscard]] constexpr bool operator==(const FloorCoord &o) const noexcept { return x == o.x && y == o.y && floor == o.floor; }
+  [[nodiscard]] constexpr bool operator!=(const FloorCoord &o) const noexcept { return !(*this == o); }
   [[nodiscard]] constexpr Vec2i ToVec2i() const noexcept { return {x, y}; }
 };
 
@@ -405,18 +352,10 @@ struct VoxelCoord {
   constexpr VoxelCoord() noexcept = default;
   constexpr VoxelCoord(int32_t x_, int32_t y_, int32_t z_) noexcept : x(x_), y(y_), z(z_) {}
 
-  [[nodiscard]] constexpr bool operator==(const VoxelCoord &o) const noexcept {
-    return x == o.x && y == o.y && z == o.z;
-  }
-  [[nodiscard]] constexpr bool operator!=(const VoxelCoord &o) const noexcept {
-    return !(*this == o);
-  }
-  [[nodiscard]] constexpr VoxelCoord operator+(const VoxelCoord &o) const noexcept {
-    return {x + o.x, y + o.y, z + o.z};
-  }
-  [[nodiscard]] constexpr VoxelCoord operator-(const VoxelCoord &o) const noexcept {
-    return {x - o.x, y - o.y, z - o.z};
-  }
+  [[nodiscard]] constexpr bool operator==(const VoxelCoord &o) const noexcept { return x == o.x && y == o.y && z == o.z; }
+  [[nodiscard]] constexpr bool operator!=(const VoxelCoord &o) const noexcept { return !(*this == o); }
+  [[nodiscard]] constexpr VoxelCoord operator+(const VoxelCoord &o) const noexcept { return {x + o.x, y + o.y, z + o.z}; }
+  [[nodiscard]] constexpr VoxelCoord operator-(const VoxelCoord &o) const noexcept { return {x - o.x, y - o.y, z - o.z}; }
 
   [[nodiscard]] uint64_t Pack() const noexcept {
     uint64_t ux = static_cast<uint64_t>(x) & 0x1FFFFFULL;
@@ -452,9 +391,7 @@ struct VoxelCoord {
   [[nodiscard]] constexpr VoxelCoord Neighbor6(int32_t dir) const noexcept;
 };
 
-inline constexpr VoxelCoord VOXEL_NEIGHBORS_6[6] = {
-    {1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}
-};
+inline constexpr VoxelCoord VOXEL_NEIGHBORS_6[6] = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
 
 inline constexpr VoxelCoord VoxelCoord::Neighbor6(int32_t dir) const noexcept {
   return *this + VOXEL_NEIGHBORS_6[dir % 6];
@@ -468,7 +405,7 @@ struct alignas(32) PathNode {
   int32_t parent = -1;
   int32_t index = -1;
   uint32_t searchEpoch = 0;
-  uint8_t state = 0; // 0 = unvisited, 1 = open, 2 = closed
+  uint8_t state = 0;  // 0 = unvisited, 1 = open, 2 = closed
   uint8_t _pad[3] = {0, 0, 0};
 };
 static_assert(sizeof(PathNode) == 32, "PathNode must be exactly 32 bytes for cache-line alignment");
@@ -512,9 +449,7 @@ public:
     }
   }
 
-  [[nodiscard]] HALO_INLINE int32_t ToIndex(Vec2i v) const noexcept {
-    return ToIndex(v.x, v.y);
-  }
+  [[nodiscard]] HALO_INLINE int32_t ToIndex(Vec2i v) const noexcept { return ToIndex(v.x, v.y); }
 
   [[nodiscard]] HALO_INLINE Vec2i ToVec(int32_t i) const noexcept {
     if constexpr (IS_POW2) {
@@ -526,30 +461,22 @@ public:
 
   [[nodiscard]] HALO_INLINE bool InBounds(int32_t x, int32_t y) const noexcept {
     if constexpr (HAS_STATIC_DIM) {
-      return static_cast<uint32_t>(x) < static_cast<uint32_t>(W) &&
-             static_cast<uint32_t>(y) < static_cast<uint32_t>(H);
+      return static_cast<uint32_t>(x) < static_cast<uint32_t>(W) && static_cast<uint32_t>(y) < static_cast<uint32_t>(H);
     } else {
-      return static_cast<uint32_t>(x) < static_cast<uint32_t>(m_w) &&
-             static_cast<uint32_t>(y) < static_cast<uint32_t>(m_h);
+      return static_cast<uint32_t>(x) < static_cast<uint32_t>(m_w) && static_cast<uint32_t>(y) < static_cast<uint32_t>(m_h);
     }
   }
 
-  [[nodiscard]] HALO_INLINE bool InBounds(Vec2i v) const noexcept {
-    return InBounds(v.x, v.y);
-  }
+  [[nodiscard]] HALO_INLINE bool InBounds(Vec2i v) const noexcept { return InBounds(v.x, v.y); }
 
-  [[nodiscard]] HALO_INLINE bool IsWalkable(int32_t i) const noexcept {
-    return HALO_LIKELY(m_walk != nullptr && m_walk[i] != 0);
-  }
+  [[nodiscard]] HALO_INLINE bool IsWalkable(int32_t i) const noexcept { return HALO_LIKELY(m_walk != nullptr && m_walk[i] != 0); }
 
   [[nodiscard]] HALO_INLINE bool IsWalkable(int32_t x, int32_t y) const noexcept {
     if (HALO_UNLIKELY(!InBounds(x, y))) return false;
     return IsWalkable(ToIndex(x, y));
   }
 
-  [[nodiscard]] HALO_INLINE bool IsWalkable(Vec2i v) const noexcept {
-    return IsWalkable(v.x, v.y);
-  }
+  [[nodiscard]] HALO_INLINE bool IsWalkable(Vec2i v) const noexcept { return IsWalkable(v.x, v.y); }
 
   HALO_INLINE void SetObstacle(int32_t x, int32_t y) noexcept {
     if (HALO_LIKELY(InBounds(x, y))) {
@@ -569,23 +496,27 @@ public:
     }
   }
 
-  [[nodiscard]] HALO_INLINE int32_t GetPenalty(int32_t i) const noexcept {
-    return m_pen ? m_pen[i] : 0;
-  }
+  [[nodiscard]] HALO_INLINE int32_t GetPenalty(int32_t i) const noexcept { return m_pen ? m_pen[i] : 0; }
 
   [[nodiscard]] HALO_INLINE int32_t Size() const noexcept {
-    if constexpr (HAS_STATIC_DIM) return W * H;
-    else return m_w * m_h;
+    if constexpr (HAS_STATIC_DIM)
+      return W * H;
+    else
+      return m_w * m_h;
   }
 
   [[nodiscard]] HALO_INLINE int32_t Width() const noexcept {
-    if constexpr (HAS_STATIC_DIM) return W;
-    else return m_w;
+    if constexpr (HAS_STATIC_DIM)
+      return W;
+    else
+      return m_w;
   }
 
   [[nodiscard]] HALO_INLINE int32_t Height() const noexcept {
-    if constexpr (HAS_STATIC_DIM) return H;
-    else return m_h;
+    if constexpr (HAS_STATIC_DIM)
+      return H;
+    else
+      return m_h;
   }
 
   [[nodiscard]] HALO_INLINE bool HasClearance(int32_t x, int32_t y, int32_t radius) const noexcept {
@@ -666,32 +597,24 @@ inline constexpr int32_t SOUTH = 6;
 inline constexpr int32_t SOUTHEAST = 7;
 
 inline constexpr Vec2i Offsets[8] = {
-    {1, 0},   // 0: East
-    {1, -1},  // 1: NorthEast
-    {0, -1},  // 2: North
-    {-1, -1}, // 3: NorthWest
-    {-1, 0},  // 4: West
-    {-1, 1},  // 5: SouthWest
-    {0, 1},   // 6: South
-    {1, 1}    // 7: SouthEast
+    {1, 0},    // 0: East
+    {1, -1},   // 1: NorthEast
+    {0, -1},   // 2: North
+    {-1, -1},  // 3: NorthWest
+    {-1, 0},   // 4: West
+    {-1, 1},   // 5: SouthWest
+    {0, 1},    // 6: South
+    {1, 1}     // 7: SouthEast
 };
 
-inline constexpr int32_t CostFP[8] = {
-    Config::FP_MULT, Config::SQRT2_FP, Config::FP_MULT, Config::SQRT2_FP,
-    Config::FP_MULT, Config::SQRT2_FP, Config::FP_MULT, Config::SQRT2_FP
-};
+inline constexpr int32_t CostFP[8] = {Config::FP_MULT, Config::SQRT2_FP, Config::FP_MULT, Config::SQRT2_FP,
+                                      Config::FP_MULT, Config::SQRT2_FP, Config::FP_MULT, Config::SQRT2_FP};
 
-inline constexpr bool IsDiag[8] = {
-    false, true, false, true,
-    false, true, false, true
-};
+inline constexpr bool IsDiag[8] = {false, true, false, true, false, true, false, true};
 
-inline constexpr bool IsDiagonal[8] = {
-    false, true, false, true,
-    false, true, false, true
-};
+inline constexpr bool IsDiagonal[8] = {false, true, false, true, false, true, false, true};
 
 inline constexpr int32_t Opposite[8] = {4, 5, 6, 7, 0, 1, 2, 3};
-} // namespace Direction
+}  // namespace Direction
 
-} // namespace halo
+}  // namespace halo

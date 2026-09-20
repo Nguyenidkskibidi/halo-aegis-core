@@ -77,7 +77,7 @@ public:
 
     int32_t distFP = mx + ((Config::SQRT2_MINUS_1_FP * mn) >> 10);
     int32_t edgeId = m_eCount++;
-    m_edges[edgeId] = {t, static_cast<int32_t>(distFP * traffic), m_nodes[f].headEdge};
+    m_edges[edgeId] = {t, static_cast<int32_t>(static_cast<float>(distFP) * traffic), m_nodes[f].headEdge};
     m_nodes[f].headEdge = edgeId;
   }
 
@@ -220,8 +220,7 @@ public:
 
   UrbanPathResult RouteTraffic(int32_t startId, int32_t targetId) noexcept {
     UrbanPathResult res;
-    if (HALO_UNLIKELY(!m_map || startId < 0 || startId >= m_map->GetNodeCount() ||
-                      targetId < 0 || targetId >= m_map->GetNodeCount())) {
+    if (HALO_UNLIKELY(!m_map || startId < 0 || startId >= m_map->GetNodeCount() || targetId < 0 || targetId >= m_map->GetNodeCount())) {
       return res;
     }
 
@@ -304,4 +303,4 @@ private:
   }
 };
 
-} // namespace halo::urban
+}  // namespace halo::urban

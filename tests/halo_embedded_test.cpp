@@ -13,14 +13,12 @@ using namespace halo::core;
 alignas(64) static uint8_t s_esp32_static_sram[64 * 1024];
 
 static int64_t GetTimestampNs() noexcept {
-  return std::chrono::duration_cast<std::chrono::nanoseconds>(
-             std::chrono::steady_clock::now().time_since_epoch())
-      .count();
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
 static void TestEmbeddedStaticBufferBoot() {
   std::printf("  [TEST 1] Zero-Heap Static Buffer Boot (64 KB ESP32 SRAM)... ");
-  
+
   // 32x32 Obstacle Grid
   alignas(64) static uint8_t s_walkable[32 * 32];
   alignas(64) static int32_t s_penalty[32 * 32];
@@ -40,7 +38,7 @@ static void TestEmbeddedStaticBufferBoot() {
   size_t used = engine.GetMasterArenaOffset();
   size_t capacity = engine.GetMasterArenaCapacity();
   assert(used > 0 && used <= capacity && "Static arena allocation failed or overflowed");
-  assert(used <= 64 * 1024 && "32x32 engine consumed too much memory for embedded target");
+  assert(used <= 64ULL * 1024ULL && "32x32 engine consumed too much memory for embedded target");
 
   // Perform route query
   Vec2i start{2, 12};
@@ -72,7 +70,7 @@ static void TestEmbedded64x64OptimalRouting() {
   for (int x = 10; x < 54; ++x) {
     grid.SetWalkable(x, 32, false);
   }
-  grid.SetWalkable(32, 32, true); // Chokepoint
+  grid.SetWalkable(32, 32, true);  // Chokepoint
 
   // 256 KB buffer for 64x64 JPS+ (within ESP32 320 KB internal SRAM envelope)
   alignas(64) static uint8_t s_esp32_256k_sram[256 * 1024];
@@ -92,8 +90,7 @@ static void TestEmbedded64x64OptimalRouting() {
   assert(anyRes.found && "Any-angle path not found");
   assert(anyRes.len <= optRes.len && "Any-angle path must have <= waypoints than grid path");
 
-  std::printf("PASSED (Grid Waypoints: %d, Any-Angle Waypoints: %d, Safe: YES)\n",
-              optRes.len, anyRes.len);
+  std::printf("PASSED (Grid Waypoints: %d, Any-Angle Waypoints: %d, Safe: YES)\n", optRes.len, anyRes.len);
 }
 
 static void TestEmbeddedByteSizedBoot() {
@@ -106,14 +103,13 @@ static void TestEmbeddedByteSizedBoot() {
 
   EmbeddedSupremeEngine32 engine;
   // Boot with exact 64 KB budget (accommodates 57,472 B needed for 32x32 JPS+)
-  engine.BootSystemBytes(&grid, 64 * 1024);
+  engine.BootSystemBytes(&grid, 64ULL * 1024ULL);
 
-  assert(engine.GetMasterArenaCapacity() >= 64 * 1024 && "Capacity mismatch");
+  assert(engine.GetMasterArenaCapacity() >= 64ULL * 1024ULL && "Capacity mismatch");
   PathResult res = engine.RouteGrid({2, 2}, {30, 30});
   assert(res.found && "Routing on byte-allocated arena failed");
 
-  std::printf("PASSED (Allocated %zu bytes, Used %zu bytes)\n",
-              engine.GetMasterArenaCapacity(), engine.GetMasterArenaOffset());
+  std::printf("PASSED (Allocated %zu bytes, Used %zu bytes)\n", engine.GetMasterArenaCapacity(), engine.GetMasterArenaOffset());
 }
 
 static void TestEmbeddedThroughputBenchmark() {

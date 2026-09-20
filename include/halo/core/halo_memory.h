@@ -7,15 +7,15 @@
 #include <utility>
 
 #if !defined(ESP_PLATFORM) && !defined(ARDUINO) && !defined(__XTENSA__) && !defined(HALO_EMBEDDED_BAREMETAL)
-  #if defined(__APPLE__)
-    #include <pthread.h>
-    #include <pthread/qos.h>
-    #include <sys/mman.h>
-  #elif defined(__linux__)
-    #include <pthread.h>
-    #include <sched.h>
-    #include <sys/mman.h>
-  #endif
+#if defined(__APPLE__)
+#include <pthread.h>
+#include <pthread/qos.h>
+#include <sys/mman.h>
+#elif defined(__linux__)
+#include <pthread.h>
+#include <sched.h>
+#include <sys/mman.h>
+#endif
 #endif
 
 #ifdef _MSC_VER
@@ -100,24 +100,17 @@ private:
 public:
   ArenaAllocator() noexcept = default;
 
-  explicit ArenaAllocator(size_t capacity) {
-    Init(capacity);
-  }
+  explicit ArenaAllocator(size_t capacity) { Init(capacity); }
 
-  ArenaAllocator(void *buffer, size_t capacity) noexcept {
-    InitWithBuffer(buffer, capacity);
-  }
+  ArenaAllocator(void *buffer, size_t capacity) noexcept { InitWithBuffer(buffer, capacity); }
 
-  ~ArenaAllocator() noexcept {
-    Release();
-  }
+  ~ArenaAllocator() noexcept { Release(); }
 
   ArenaAllocator(const ArenaAllocator &) = delete;
   ArenaAllocator &operator=(const ArenaAllocator &) = delete;
 
   ArenaAllocator(ArenaAllocator &&other) noexcept
-      : m_buffer(other.m_buffer), m_capacity(other.m_capacity),
-        m_offset(other.m_offset), m_ownsBuffer(other.m_ownsBuffer) {
+      : m_buffer(other.m_buffer), m_capacity(other.m_capacity), m_offset(other.m_offset), m_ownsBuffer(other.m_ownsBuffer) {
     other.m_buffer = nullptr;
     other.m_capacity = 0;
     other.m_offset = 0;
@@ -169,7 +162,8 @@ public:
   // Eradicates OS soft page faults on desktop, safely no-ops on flat physical embedded RAM.
   void PreFaultAndWarmCache() noexcept {
     if (!m_buffer || m_capacity == 0) return;
-#if (defined(__APPLE__) || defined(__linux__)) && !defined(ESP_PLATFORM) && !defined(ARDUINO) && !defined(__XTENSA__) && !defined(HALO_EMBEDDED_BAREMETAL)
+#if (defined(__APPLE__) || defined(__linux__)) && !defined(ESP_PLATFORM) && !defined(ARDUINO) && !defined(__XTENSA__) && \
+    !defined(HALO_EMBEDDED_BAREMETAL)
     // Advise kernel that these pages will be accessed immediately
     madvise(m_buffer, m_capacity, MADV_WILLNEED);
     // Lock pages into physical RAM to prevent demand paging and swap
@@ -221,9 +215,7 @@ public:
   [[nodiscard]] size_t GetCapacity() const noexcept { return m_capacity; }
   [[nodiscard]] size_t GetRemaining() const noexcept { return m_capacity > m_offset ? m_capacity - m_offset : 0; }
 
-  void Reset() noexcept {
-    m_offset = 0;
-  }
+  void Reset() noexcept { m_offset = 0; }
 
   void ResetTo(size_t offset) noexcept {
     assert(offset <= m_capacity && "ArenaAllocator: Invalid rollback offset");
@@ -237,15 +229,12 @@ private:
   size_t m_savedOffset;
 
 public:
-  explicit ArenaFrame(ArenaAllocator &arena) noexcept
-      : m_arena(arena), m_savedOffset(arena.GetOffset()) {}
+  explicit ArenaFrame(ArenaAllocator &arena) noexcept : m_arena(arena), m_savedOffset(arena.GetOffset()) {}
 
-  ~ArenaFrame() noexcept {
-    m_arena.ResetTo(m_savedOffset);
-  }
+  ~ArenaFrame() noexcept { m_arena.ResetTo(m_savedOffset); }
 
   ArenaFrame(const ArenaFrame &) = delete;
   ArenaFrame &operator=(const ArenaFrame &) = delete;
 };
 
-} // namespace halo::memory
+}  // namespace halo::memory

@@ -59,6 +59,15 @@ if (HALO_BUILD_BENCHMARKS)
 
   add_executable(halo_universal_genius_benchmark tests/halo_universal_genius_benchmark.cpp)
   target_link_libraries(halo_universal_genius_benchmark PRIVATE halo_aegis_core)
+
+  add_executable(halo_assembly_audit tests/halo_assembly_audit.cpp)
+  target_link_libraries(halo_assembly_audit PRIVATE halo_aegis_core)
+
+  find_package(benchmark QUIET)
+  if (benchmark_FOUND)
+    add_executable(halo_google_benchmark tests/halo_google_benchmark.cpp)
+    target_link_libraries(halo_google_benchmark PRIVATE halo_aegis_core benchmark::benchmark benchmark::benchmark_main)
+  endif()
 endif()
 
 if (HALO_BUILD_EXAMPLES)

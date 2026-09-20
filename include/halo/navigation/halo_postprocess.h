@@ -17,8 +17,7 @@ struct PortalVertex {
 };
 
 // Classical SSFA String Pulling through portal corridors with zero allocations
-inline int32_t StringPullPortalsSSFA(const PortalVertex *portals, int32_t numPortals,
-                                     Vec2f *outPath, int32_t maxOut) noexcept {
+inline int32_t StringPullPortalsSSFA(const PortalVertex *portals, int32_t numPortals, Vec2f *outPath, int32_t maxOut) noexcept {
   if (!portals || numPortals <= 0 || !outPath || maxOut <= 0) return 0;
 
   int32_t outCount = 0;
@@ -98,8 +97,7 @@ inline int32_t StringPullPortalsSSFA(const PortalVertex *portals, int32_t numPor
 
 // Raycast-based Line-of-Sight String Pulling for Grid Waypoints
 template <typename RaycastClearFunc>
-inline int32_t StringPullGridPath(const Vec2i *inPath, int32_t inCount,
-                                  Vec2i *outPath, int32_t maxOut,
+inline int32_t StringPullGridPath(const Vec2i *inPath, int32_t inCount, Vec2i *outPath, int32_t maxOut,
                                   RaycastClearFunc &&isLineClear) noexcept {
   if (!inPath || inCount <= 0 || !outPath || maxOut <= 0) return 0;
   if (inCount == 1) {
@@ -133,13 +131,12 @@ inline int32_t StringPullGridPath(const Vec2i *inPath, int32_t inCount,
 // 2. CHAIKIN'S CORNER CUTTING ALGORITHM (IN-PLACE ITERATIVE SMOOTHING)
 // ============================================================================
 
-inline int32_t ChaikinSmooth(const Vec2f *inPoints, int32_t inCount,
-                             Vec2f *outPoints, int32_t maxOut,
-                             int32_t iterations = 2) noexcept {
+inline int32_t ChaikinSmooth(const Vec2f *inPoints, int32_t inCount, Vec2f *outPoints, int32_t maxOut, int32_t iterations = 2) noexcept {
   if (!inPoints || inCount <= 0 || !outPoints || maxOut <= 0) return 0;
   if (inCount <= 2 || iterations <= 0) {
     int32_t n = std::min(inCount, maxOut);
-    for (int32_t i = 0; i < n; ++i) outPoints[i] = inPoints[i];
+    for (int32_t i = 0; i < n; ++i)
+      outPoints[i] = inPoints[i];
     return n;
   }
 
@@ -149,14 +146,15 @@ inline int32_t ChaikinSmooth(const Vec2f *inPoints, int32_t inCount,
   Vec2f bufB[SCRATCH_SIZE];
 
   int32_t curCount = std::min(inCount, SCRATCH_SIZE);
-  for (int32_t i = 0; i < curCount; ++i) bufA[i] = inPoints[i];
+  for (int32_t i = 0; i < curCount; ++i)
+    bufA[i] = inPoints[i];
 
   Vec2f *readBuf = bufA;
   Vec2f *writeBuf = bufB;
 
   for (int32_t it = 0; it < iterations; ++it) {
     int32_t writeCount = 0;
-    if (writeCount < SCRATCH_SIZE) writeBuf[writeCount++] = readBuf[0]; // Retain start
+    if (writeCount < SCRATCH_SIZE) writeBuf[writeCount++] = readBuf[0];  // Retain start
 
     for (int32_t i = 0; i < curCount - 1; ++i) {
       Vec2f p0 = readBuf[i];
@@ -171,7 +169,7 @@ inline int32_t ChaikinSmooth(const Vec2f *inPoints, int32_t inCount,
       if (writeCount < SCRATCH_SIZE) writeBuf[writeCount++] = r;
     }
 
-    if (writeCount < SCRATCH_SIZE) writeBuf[writeCount++] = readBuf[curCount - 1]; // Retain goal
+    if (writeCount < SCRATCH_SIZE) writeBuf[writeCount++] = readBuf[curCount - 1];  // Retain goal
 
     curCount = writeCount;
     std::swap(readBuf, writeBuf);
@@ -192,19 +190,16 @@ inline Vec2f EvaluateCatmullRom(Vec2f p0, Vec2f p1, Vec2f p2, Vec2f p3, float t)
   float t2 = t * t;
   float t3 = t2 * t;
 
-  return (p1 * 2.0f +
-          (-p0 + p2) * t +
-          (p0 * 2.0f - p1 * 5.0f + p2 * 4.0f - p3) * t2 +
-          (-p0 + p1 * 3.0f - p2 * 3.0f + p3) * t3) * 0.5f;
+  return (p1 * 2.0f + (-p0 + p2) * t + (p0 * 2.0f - p1 * 5.0f + p2 * 4.0f - p3) * t2 + (-p0 + p1 * 3.0f - p2 * 3.0f + p3) * t3) * 0.5f;
 }
 
-inline int32_t CatmullRomSpline(const Vec2f *controlPoints, int32_t numControl,
-                                Vec2f *outPoints, int32_t maxOut,
+inline int32_t CatmullRomSpline(const Vec2f *controlPoints, int32_t numControl, Vec2f *outPoints, int32_t maxOut,
                                 int32_t subdivisionsPerSegment = 4) noexcept {
   if (!controlPoints || numControl <= 0 || !outPoints || maxOut <= 0) return 0;
   if (numControl < 4) {
     int32_t n = std::min(numControl, maxOut);
-    for (int32_t i = 0; i < n; ++i) outPoints[i] = controlPoints[i];
+    for (int32_t i = 0; i < n; ++i)
+      outPoints[i] = controlPoints[i];
     return n;
   }
 
@@ -234,13 +229,13 @@ inline int32_t CatmullRomSpline(const Vec2f *controlPoints, int32_t numControl,
 // 4. KINEMATIC CURVATURE & TURN-RADIUS CLAMPING
 // ============================================================================
 
-inline int32_t CurvatureClamp(const Vec2f *inPoints, int32_t inCount,
-                              Vec2f *outPoints, int32_t maxOut,
-                              float maxTurnAngleRad = 1.04719755f) noexcept { // 60 deg max turn
+inline int32_t CurvatureClamp(const Vec2f *inPoints, int32_t inCount, Vec2f *outPoints, int32_t maxOut,
+                              float maxTurnAngleRad = 1.04719755f) noexcept {  // 60 deg max turn
   if (!inPoints || inCount <= 0 || !outPoints || maxOut <= 0) return 0;
   if (inCount <= 2) {
     int32_t n = std::min(inCount, maxOut);
-    for (int32_t i = 0; i < n; ++i) outPoints[i] = inPoints[i];
+    for (int32_t i = 0; i < n; ++i)
+      outPoints[i] = inPoints[i];
     return n;
   }
 
@@ -277,8 +272,7 @@ inline int32_t CurvatureClamp(const Vec2f *inPoints, int32_t inCount,
 // 5. BACKWARD COMPATIBILITY RASTERIZATION
 // ============================================================================
 
-inline int32_t RasterizePathZeroAlloc(const Vec2i *waypoints, int32_t numWaypoints,
-                                     Vec2i *outPath, int32_t maxOut) noexcept {
+inline int32_t RasterizePathZeroAlloc(const Vec2i *waypoints, int32_t numWaypoints, Vec2i *outPath, int32_t maxOut) noexcept {
   if (!waypoints || numWaypoints <= 0 || !outPath || maxOut <= 0) return 0;
 
   int32_t count = 0;
@@ -317,8 +311,7 @@ inline int32_t RasterizePathZeroAlloc(const Vec2i *waypoints, int32_t numWaypoin
   return count;
 }
 
-inline int32_t RasterizePath(const Vec2i *waypoints, int32_t count,
-                             Vec2i *outPath, int32_t maxOut) noexcept {
+inline int32_t RasterizePath(const Vec2i *waypoints, int32_t count, Vec2i *outPath, int32_t maxOut) noexcept {
   if (!waypoints || count <= 0 || !outPath || maxOut <= 0) return 0;
   int32_t outCount = 0;
   outPath[outCount++] = waypoints[0];
@@ -357,4 +350,4 @@ inline int32_t RasterizePath(const Vec2i *waypoints, int32_t count,
   return outCount;
 }
 
-} // namespace halo::postprocess
+}  // namespace halo::postprocess
