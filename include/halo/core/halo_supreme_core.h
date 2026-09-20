@@ -3,6 +3,7 @@
 #include "../navigation/halo_apsp.h"
 #include "../navigation/halo_jps_plus.h"
 #include "../navigation/halo_postprocess.h"
+#include "../kinodynamics/halo_kinodynamics.h"
 #include "../utils/halo_heap.h"
 #include "../utils/halo_math.h"
 #include "../utils/halo_types.h"
@@ -326,6 +327,34 @@ public:
         outDense.steps[outDense.stepCount++] = cur;
       }
     }
+  }
+
+  // 6. Kinodynamic Continuous Quintic Trajectory Synthesis (< 800 ns, C^3 continuous)
+  [[nodiscard]] HALO_INLINE PathResult RouteKinodynamic(
+      Vec2i start, Vec2i target,
+      const kinodynamics::KinodynamicLimits &limits,
+      kinodynamics::KinodynamicTrajectory &outTraj,
+      RoutingMode mode = RoutingMode::Turbo) noexcept {
+    PathResult res = RouteGrid(start, target, mode);
+    if (!res.found || res.len <= 0) {
+      outTraj.Clear();
+      return res;
+    }
+
+    Vec2i pulled[Config::MAX_PATH_LEN];
+    int32_t pulledCount = postprocess::StringPullGridPath(
+        res.route, res.len, pulled, Config::MAX_PATH_LEN,
+        [this](Vec2i a, Vec2i b) noexcept {
+          return math::HasLineOfSight(*reinterpret_cast<const Grid *>(this->m_grid), a, b);
+        });
+
+    Vec2f waypoints[Config::MAX_PATH_LEN];
+    for (int32_t i = 0; i < pulledCount; ++i) {
+      waypoints[i] = Vec2f{static_cast<float>(pulled[i].x), static_cast<float>(pulled[i].y)};
+    }
+
+    kinodynamics::GenerateQuinticTrajectory(waypoints, pulledCount, limits, outTraj);
+    return res;
   }
 
   urban::UrbanPathResult RouteUrban(int32_t startNode, int32_t targetNode) noexcept {

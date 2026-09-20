@@ -46,6 +46,23 @@
 #define HALO_LOG(...) ((void)0)
 #endif
 
+// ============================================================================
+// DUAL-TIER HARDWARE EXECUTION PROFILES (MICRO TO BEAST)
+// ============================================================================
+#if defined(HALO_PROFILE_MICRO)
+  // Microcontroller Profile (ESP32, STM32, RP2040, Cortex-M4/M7, RISC-V 32)
+  // Strictly < 64 KB RAM envelope, pure 32-bit Q16.16 fixed-point math, 0 dynamic allocations
+  #define HALO_MAX_GRID_DIM 64
+  #define HALO_TARGET_IS_MICRO 1
+#elif defined(HALO_PROFILE_BEAST) || defined(__aarch64__) || defined(__x86_64__) || defined(_M_X64) || defined(_M_ARM64)
+  // High-Performance Beast Profile (Apple Silicon, Intel/AMD x86_64, NVIDIA Jetson Orin)
+  // Multi-megabyte portal clipmaps, AVX2/AVX-512 & ARM NEON quad-vector acceleration
+  #define HALO_MAX_GRID_DIM 2048
+  #define HALO_TARGET_IS_BEAST 1
+#else
+  #define HALO_MAX_GRID_DIM 512
+#endif
+
 namespace halo {
 
 namespace bits {

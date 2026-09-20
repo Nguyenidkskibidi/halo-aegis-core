@@ -3,6 +3,7 @@
 #include "../core/halo_memory.h"
 #include "../core/halo_simd.h"
 #include "../utils/halo_types.h"
+#include "halo_swar_10_layer_bitboard.h"
 #include <cassert>
 #include <cstdint>
 #include <cstring>
@@ -284,6 +285,10 @@ private:
   RobinHoodChunkMap m_chunkMap;
   RollingToroidalClipmap128 m_clipmap;
 
+  int32_t m_lastCx = 0x7FFFFFFF;
+  int32_t m_lastCy = 0x7FFFFFFF;
+  SparseChunk *m_lastChunk = nullptr;
+
 public:
   SparseBitboardWorld() noexcept = default;
 
@@ -292,6 +297,9 @@ public:
     m_chunkCount = 0;
     m_chunkMap.Init(HASH_CAPACITY, arena);
     m_clipmap.Clear();
+    m_lastCx = 0x7FFFFFFF;
+    m_lastCy = 0x7FFFFFFF;
+    m_lastChunk = nullptr;
   }
 
   [[nodiscard]] uint32_t GetAllocatedChunkCount() const noexcept { return m_chunkCount; }
@@ -325,17 +333,35 @@ public:
     return &m_chunkPool[idx];
   }
 
-  // Set bit in world metric coordinates (1m / unit)
-  void SetBitWorld(int32_t layer, int32_t worldX, int32_t worldY) noexcept {
-    int32_t cx = (worldX >= 0) ? (worldX / 64) : ((worldX - 63) / 64);
-    int32_t cy = (worldY >= 0) ? (worldY / 64) : ((worldY - 63) / 64);
-    int32_t lx = worldX - (cx * 64);
-    int32_t ly = worldY - (cy * 64);
+  // Set bit in world metric coordinates (1m / unit) with hot-chunk caching
+  HALO_INLINE void SetBitWorld(int32_t layer, int32_t worldX, int32_t worldY) noexcept {
+    int32_t cx = (worldX >= 0) ? (worldX >> 6) : ((worldX - 63) >> 6);
+    int32_t cy = (worldY >= 0) ? (worldY >> 6) : ((worldY - 63) >> 6);
+    int32_t lx = worldX & 63;
+    int32_t ly = worldY & 63;
 
-    SparseChunk *chunk = GetOrCreateChunk(cx, cy);
-    if (chunk) {
+    SparseChunk *chunk = m_lastChunk;
+    if (HALO_UNLIKELY(cx != m_lastCx || cy != m_lastCy || !chunk)) {
+      chunk = GetOrCreateChunk(cx, cy);
+      m_lastCx = cx;
+      m_lastCy = cy;
+      m_lastChunk = chunk;
+    }
+    if (HALO_LIKELY(chunk)) {
       chunk->SetBit(layer, lx, ly);
     }
+  }
+
+  HALO_INLINE void SetBit(swar::Layer layer, int32_t worldX, int32_t worldY) noexcept {
+    SetBitWorld(static_cast<int32_t>(layer), worldX, worldY);
+  }
+
+  HALO_INLINE void SetBit(int32_t layer, int32_t worldX, int32_t worldY) noexcept {
+    SetBitWorld(layer, worldX, worldY);
+  }
+
+  [[nodiscard]] HALO_INLINE bool IsBlocked(int32_t worldX, int32_t worldY) const noexcept {
+    return IsBlockedWorld(worldX, worldY);
   }
 
   [[nodiscard]] HALO_INLINE bool IsBlockedWorld(int32_t worldX, int32_t worldY) const noexcept {

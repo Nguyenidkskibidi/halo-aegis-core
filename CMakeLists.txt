@@ -56,6 +56,9 @@ if (HALO_BUILD_BENCHMARKS)
 
   add_executable(halo_embedded_test tests/halo_embedded_test.cpp)
   target_link_libraries(halo_embedded_test PRIVATE halo_aegis_core)
+
+  add_executable(halo_universal_genius_benchmark tests/halo_universal_genius_benchmark.cpp)
+  target_link_libraries(halo_universal_genius_benchmark PRIVATE halo_aegis_core)
 endif()
 
 if (HALO_BUILD_EXAMPLES)

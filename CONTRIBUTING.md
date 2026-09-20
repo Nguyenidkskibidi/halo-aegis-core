@@ -86,18 +86,19 @@ You are invited to contribute in many meaningful ways:
    ```bash
    git checkout -b feature/my-awesome-optimization
    ```
-3. **Verify Locally Against the 6-Stage Gate**:
+3. **Verify Locally Against the 7-Stage Gate**:
    - Before submitting, run the full automated verification pipeline:
      ```bash
      ./scripts/build_and_verify.sh
      ```
-   - **Must pass 100% across all 6 stages**:
+   - **Must pass 100% across all 7 stages**:
      - Stage 1: ASan & UBSan clean (0 memory leaks, 0 undefined behaviors).
      - Stage 2: Stripped binary size $< 40\text{ KB}$ ($34,304\text{ bytes}$).
      - Stage 3: Dynamic drone flight simulation (0.00% collisions across 5,000 cycles).
      - Stage 4: Hardware maximization suite ($< 0.35\text{ ns}$ raycast, P99 $< 500\text{ ns}$ JPS+).
      - Stage 5: Universal spatial benchmark (total RAM $\le 16.00\text{ MB}$).
      - Stage 6: Embedded & ESP32 Zero-Heap verification (100% deterministic on 64 KB SRAM).
+     - Stage 7: Project Omni-Aegis Universal Genius Benchmark (all 4 physical gates: sensor ingestion $< 10\ \mu\text{s}$, kinodynamics $< 3\ \mu\text{s}$, micro footprint $\le 64\text{ KB}$, 0.00% dynamic collisions, 1 kHz trackers $< 50\text{ ns}$).
 4. **Submit Your PR**:
    - Provide a clear summary of what you changed, why you changed it, and include benchmark comparisons.
 5. **Wait for Review**:
