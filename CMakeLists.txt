@@ -73,4 +73,8 @@ endif()
 if (HALO_BUILD_EXAMPLES)
   add_executable(halo_example examples/main.cpp)
   target_link_libraries(halo_example PRIVATE halo_aegis_core)
+
+  add_library(halo_shared SHARED examples/halo_c_api.cpp)
+  target_link_libraries(halo_shared PRIVATE halo_aegis_core)
+  set_target_properties(halo_shared PROPERTIES OUTPUT_NAME "halo_core")
 endif()

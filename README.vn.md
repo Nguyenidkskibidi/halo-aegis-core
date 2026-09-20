@@ -29,6 +29,7 @@
 4. [Kiến Trúc Kỹ Thuật 7 Tầng Tinh Hoa](#-kiến-trúc-kỹ-thuật-7-tầng-tinh-hoa)
 5. [Trực Quan Hóa Lưới Ma Trận Phản Xạ (ASCII Art Demo)](#-trực-quan-hóa-lưới-ma-trận-phản-xạ-ascii-art-demo)
 6. [Tích Hợp Siêu Tốc Trong 5 Dòng Code (Quick Start)](#-tích-hợp-siêu-tốc-trong-5-dòng-code-quick-start)
+   - [🎮 Thử Nghiệm Trực Quan Bằng Python Playground GUI (Mac, Windows, Linux, Debian)](#-thử-nghiệm-trực-quan-bằng-python-playground-gui)
 7. [Cấu Trúc Thư Mục Toàn Dự Án](#-cấu-trúc-thư-mục-toàn-dự-án)
 8. [Quy Trình Build & Kiểm Định Độc Lập](#-quy-trình-build--kiểm-định-độc-lập)
    - [📖 Hướng Dẫn Đọc Thông Số Đầu Ra (Giải Mã 11 Tầng Telemetry)](#-hướng-dẫn-đọc-thông-số-đầu-ra-giải-mã-11-tầng-telemetry)
@@ -384,6 +385,110 @@ Biên dịch cực nhanh với Clang hoặc GCC:
 clang++ -O3 -std=c++20 -march=native -DNDEBUG -Iinclude main.cpp -o app && ./app
 ```
 
+### 🎮 Thử Nghiệm Trực Quan Bằng Python Playground GUI
+
+Bạn muốn thử nghiệm trực quan bằng giao diện đồ họa chiến thuật hiện đại (tactical dark GUI), vẽ chướng ngại vật bằng chuột, bắn tia LiDAR SWAR thời gian thực, kích hoạt khiên Aegis 10 tầng và mô phỏng drone bay mượt mà theo đường cong $C^3$? Hãy khởi chạy ngay ứng dụng máy tính chiến thuật đi kèm (`halo_playground.py`):
+
+- **Vẽ bản đồ trực tiếp**: Vẽ và xoá vật cản với kích thước cọ linh hoạt (1x1, 3x3, 5x5); kéo thả mốc Xuất phát (S) / Đích đến (G) để quan sát thuật toán tìm đường tính toán lại ngay tức khắc dưới 1 ms.
+- **Quét tia LiDAR 32 hướng**: Rê chuột với công cụ Probe để bắn chùm 32 tia laser 360° đo khoảng cách va chạm và pháp tuyến hình học thời gian thực.
+- **Né vật cản động thời gian thực (The Dog Test)**: Thả vật cản bất ngờ cắt ngang hành lang bay, quan sát khiên Aegis 10 tầng kích hoạt cảnh báo vàng (Tầng 9) và phanh gấp khẩn cấp màu đỏ (Tầng 2) trước khi tìm đường vòng tránh nạn!
+- **Mô phỏng bay drone liên tục $C^3$**: Drone 4 cánh (quadrotor) bám đường bay spline Catmull-Rom mượt mà bằng thuật toán lái Pure Pursuit & Stanley.
+- **Bộ đo Benchmark 1.000 lượt**: Bấm nút Benchmark để đo và xuất biểu đồ phân vị độ trễ Min / P50 / P95 / P99 siêu chuẩn.
+- **Kiến trúc Hybrid 2 tầng**: Tự động liên kết trực tiếp với lõi C++20 gốc qua C-ABI `ctypes` (`libhalo_core`) để đạt tốc độ microsecond/nanosecond, hoặc tự động kích hoạt lõi True JPS+ thuần Python nếu máy chưa cài compiler.
+
+---
+
+#### 📦 Yêu Cầu Cài Đặt & Môi Trường (Không Cần Cài Bất Kỳ Thư Viện Pip Nào!)
+
+Playground được thiết kế theo triết lý **Zero External Dependencies** — ứng dụng chạy 100% bằng thư viện tiêu chuẩn có sẵn của Python (`tkinter`, `ctypes`, `math`, `time`, `platform`, `subprocess`). Bạn **hoàn toàn không cần chạy `pip install`**.
+
+Bạn chỉ cần có **Python 3.8+** và gói giao diện `tkinter`. Dưới đây là hướng dẫn chi tiết từng bước cho từng hệ điều hành:
+
+##### 🍎 macOS
+macOS (cài qua Homebrew hoặc file tải từ python.org) đã tích hợp sẵn Tkinter:
+```bash
+# 1. Kiểm tra Python 3 và Tkinter:
+python3 -c "import tkinter; print('Tkinter OK')"
+
+# Nếu dùng Homebrew và máy báo thiếu Tkinter:
+brew install python-tk
+```
+
+##### 🐧 Debian / Ubuntu / Raspberry Pi OS / Linux Mint
+Trên hệ điều hành họ Debian, thư viện Tkinter được tách riêng thành gói hệ thống:
+```bash
+# Cập nhật danh sách gói và cài đặt Python 3 cùng Tkinter:
+sudo apt update
+sudo apt install -y python3 python3-tk
+
+# Kiểm tra hoạt động:
+python3 -c "import tkinter; print('Tkinter OK')"
+```
+> [!NOTE]
+> Nếu bạn chạy từ xa qua SSH, hãy bật tính năng chuyển tiếp đồ họa (`ssh -X user@host`), hoặc chạy trực tiếp trong giao diện màn hình máy tính (Desktop GUI).
+
+##### 🪟 Windows (10 / 11)
+1. Tải bản cài đặt Python 3 chính thức từ [python.org/downloads](https://www.python.org/downloads/).
+2. Chạy file `.exe` cài đặt.
+3. **BƯỚC QUAN TRỌNG NHẤT**: Tại màn hình cài đặt đầu tiên:
+   - ✅ Tích chọn ô **"Add Python to PATH"** (hoặc **"Add python.exe to PATH"**).
+   - Chọn **"Customize installation"** và đảm bảo tuỳ chọn **"tcl/tk and IDLE"** đã được đánh dấu tích (mặc định đã được chọn).
+4. Hoàn tất cài đặt, sau đó mở **Command Prompt (cmd)** hoặc **PowerShell**:
+```cmd
+python -c "import tkinter; print('Tkinter OK')"
+```
+*(Hoặc cài đặt siêu nhanh qua Windows Package Manager: `winget install Python.Python.3.12`)*
+
+##### 🐧 Các Bản Phân Phối Linux Khác (Arch, Fedora, openSUSE)
+- **Arch Linux / Manjaro**:
+  ```bash
+  sudo pacman -S --needed python tk
+  ```
+- **Fedora / RHEL / CentOS**:
+  ```bash
+  sudo dnf install -y python3 python3-tkinter
+  ```
+- **openSUSE**:
+  ```bash
+  sudo zypper install -y python3 python3-tk
+  ```
+
+---
+
+#### 🚀 Cách Chạy File Playground GUI
+
+##### Trên macOS & Linux (Debian, Ubuntu, Arch, Fedora):
+```bash
+python3 halo_playground.py
+```
+
+##### Trên Windows:
+```cmd
+python halo_playground.py
+:: Hoặc dùng trình khởi chạy Python:
+py halo_playground.py
+```
+
+> [!TIP]
+> **Kích Hoạt Tốc Độ Phần Cứng C++20 (< 25 µs trong Python)**:  
+> Bạn chỉ cần chạy `./build_and_verify.sh` một lần trong terminal. Script sẽ tự biên dịch thư viện chia sẻ `libhalo_core.dylib` (macOS), `libhalo_core.so` (Linux), hoặc `halo_core.dll` (Windows) vào thư mục `build/`. Khi mở `halo_playground.py`, ứng dụng sẽ nhận diện thư viện C++ và hiển thị huy hiệu `ENGINE: C++20 NATIVE (C-ABI)`. Nếu chưa build C++, ứng dụng sẽ tự động chạy chế độ `ENGINE: PYTHON FALLBACK` mượt mà.
+
+---
+
+#### ⌨️ Phím Tắt & Thao Tác Điều Khiển
+
+| Thao tác / Phím tắt | Chức năng | Mô tả chi tiết |
+| :--- | :--- | :--- |
+| **Chuột trái + Rê chuột** | Vẽ Tường / Bắn LiDAR | Vẽ chướng ngại vật hoặc quét chùm tia laser tùy công cụ đang chọn |
+| **Chuột phải + Rê chuột**| Xóa Vật Cản | Xóa nhanh các ô chướng ngại vật bên dưới con trỏ chuột |
+| **Kéo thả nút S / G** | Đổi Điểm Bắt Đầu / Đích | Tự động tính lại quỹ đạo bay tối ưu theo thời gian thực |
+| <kbd>Space</kbd> | Bật / Dừng Chuyến Bay | Kích hoạt hoặc tạm dừng mô phỏng drone bay bám quỹ đạo |
+| <kbd>C</kbd> | Xóa Trắng Bản Đồ | Xóa toàn bộ vật cản trên lưới |
+| <kbd>M</kbd> | Đổi Bản Đồ Mẫu | Chuyển vòng lặp: Trống, Thưa (15%), Dày (30%), Mê cung, Hẻm hẹp |
+| <kbd>R</kbd> | Reset Drone | Đặt drone quay trở lại điểm xuất phát |
+| <kbd>1</kbd> - <kbd>6</kbd> | Chọn Công Cụ | Chuyển nhanh giữa: Tường, Xóa, LiDAR, Xuất phát, Đích, Thử Vật Cản Động |
+| <kbd>Esc</kbd> | Hủy Thao Tác | Dừng khẩn cấp mô phỏng drone hoặc quá trình đo benchmark |
+
 ---
 
 ## 🏗️ Cấu Trúc Thư Mục Toàn Dự Án
@@ -427,6 +532,7 @@ halo-aegis-core/
 │       └── halo_math.h             # Fast rsqrt, fixed-point math, lerp, clamp
 ├── examples/           # Mã nguồn ví dụ mẫu
 │   ├── main.cpp        # Demo trực quan ma trận Omni-Shadow (kích thước < 34 KB)
+│   ├── halo_c_api.cpp  # Lớp xuất chuẩn C-ABI cho Python ctypes và Game Engine
 │   └── esp32_arduino/  # Ví dụ cắm là chạy cho Arduino / ESP-IDF trên ESP32/ESP32-S3
 ├── tests/              # Bộ kiểm thử thực nghiệm phần cứng & Benchmark
 │   ├── halo_benchmark.cpp               # Suite chính: Cổng 1 (Raycast), Cổng 2 (JPS+), Cổng 3 (Drone)
@@ -442,6 +548,7 @@ halo-aegis-core/
 ├── docs/               # Tài liệu chuyên sâu
 │   ├── TECHNICAL_WHITEPAPER.md          # Sách trắng kỹ thuật chứng minh toán học và SIMD (English)
 │   └── TECHNICAL_WHITEPAPER.vn.md       # Sách trắng kỹ thuật toàn diện chứng minh toán học (Tiếng Việt)
+├── halo_playground.py  # Giao diện đồ họa chiến thuật tương tác và mô phỏng động lực học bay Python
 ├── .clang-format       # Chuẩn định dạng C++20 thống nhất (Clang-Format Invariant)
 ├── .clang-tidy         # Bộ phân tích tĩnh tìm lỗi ngầm & tối ưu hiệu năng
 ├── CMakeLists.txt      # Cấu hình chuẩn CMake

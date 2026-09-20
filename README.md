@@ -30,6 +30,7 @@
 4. [🧩 7-Pillar Architectural Deep-Dive](#-7-pillar-architectural-deep-dive)
 5. [🎨 Interactive Terminal ASCII Art Visualizer](#-interactive-terminal-ascii-art-visualizer)
 6. [🚀 Quick Start in 5 Lines of C++20](#-quick-start-in-5-lines-of-c20)
+   - [🎮 Interactive Python Playground GUI (Mac, Windows, Linux, Debian)](#-interactive-cyber-aerospace-python-playground-gui)
 7. [🏗️ Project Directory Layout](#️-project-directory-layout)
 8. [🛠️ Independent Build & Verification Pipeline](#️-independent-build--verification-pipeline)
    - [📖 How to Read the Pipeline Output Telemetry](#-how-to-read-the-pipeline-output-telemetry-stage-by-stage-guide)
@@ -378,6 +379,110 @@ Compile with standard Clang or GCC:
 clang++ -O3 -std=c++20 -march=native -DNDEBUG -Iinclude app.cpp -o app && ./app
 ```
 
+### 🎮 Interactive Cyber-Aerospace Python Playground GUI
+
+Prefer a graphical, interactive visualizer to experiment with True JPS+, SWAR LiDAR probes, 10-layer Aegis shields, and $C^3$ drone flight dynamics? The repository includes a standalone tactical HUD desktop application (`halo_playground.py`):
+
+- **Live Interactive Canvas**: Draw and erase obstacles with customizable brush sizes (1x1, 3x3, 5x5); drag Start/Goal beacons with real-time sub-microsecond path recalculation.
+- **32-Beam SWAR LiDAR**: Hover cursor with Probe tool to fire real-time 360° laser fans and inspect collision normals.
+- **Dynamic Threat Evasion ("The Dog Test")**: Spawn moving obstacles crossing the flight corridor and observe the 10-layer Aegis shield execute emergency braking and trajectory re-routing in real time.
+- **Continuous $C^3$ Flight Simulation**: Smooth Catmull-Rom spline path with Pure Pursuit and Stanley steering quadrotor drone flight.
+- **1,000x Empirical Benchmark**: Click the benchmark button for instant empirical P50 / P95 / P99 latency distribution overlays.
+- **Hybrid Silicon / Python Engine**: Uses high-speed native C++20 via C-ABI `ctypes` (`libhalo_core`) when built, with automatic seamless fallback to pure Python.
+
+---
+
+#### 📦 Prerequisites & Library Installation (Zero External Pip Packages!)
+
+The playground is engineered with **zero external `pip` dependencies** — it runs entirely on Python's built-in standard library (`tkinter`, `ctypes`, `math`, `time`, `platform`, `subprocess`).
+
+You only need **Python 3.8+** with the standard `tkinter` UI package. Below are exact step-by-step setup guides for all major operating systems:
+
+##### 🍎 macOS
+macOS systems with Homebrew or Python.org installations have Tkinter ready out of the box:
+```bash
+# 1. Verify Python 3 & Tkinter are available:
+python3 -c "import tkinter; print('Tkinter OK')"
+
+# If Tkinter is missing or you use Homebrew:
+brew install python-tk
+```
+
+##### 🐧 Debian / Ubuntu / Raspberry Pi OS / Linux Mint
+Debian-based distributions package Tkinter separately from Python core:
+```bash
+# Update package indices and install Python 3 with Tkinter:
+sudo apt update
+sudo apt install -y python3 python3-tk
+
+# Verify installation:
+python3 -c "import tkinter; print('Tkinter OK')"
+```
+> [!NOTE]
+> If running over SSH, ensure X11/Wayland forwarding is enabled (`ssh -X user@host`), or launch from a local desktop session.
+
+##### 🪟 Windows (10 / 11)
+1. Download Python 3 from [python.org/downloads](https://www.python.org/downloads/).
+2. Run the official installer executable.
+3. **CRITICAL STEP**: On the first installer screen:
+   - ✅ Check **"Add Python to PATH"** (or **"Add python.exe to PATH"**).
+   - Click **"Customize installation"** and verify that **"tcl/tk and IDLE"** is checked (checked by default).
+4. Finish installation and open **Command Prompt** or **PowerShell**:
+```cmd
+python -c "import tkinter; print('Tkinter OK')"
+```
+*(Or install via Windows Package Manager: `winget install Python.Python.3.12`)*
+
+##### 🐧 Other Linux Distros (Arch, Fedora, openSUSE)
+- **Arch Linux / Manjaro**:
+  ```bash
+  sudo pacman -S --needed python tk
+  ```
+- **Fedora / RHEL / CentOS**:
+  ```bash
+  sudo dnf install -y python3 python3-tkinter
+  ```
+- **openSUSE**:
+  ```bash
+  sudo zypper install -y python3 python3-tk
+  ```
+
+---
+
+#### 🚀 How to Run the Playground GUI
+
+##### On macOS & Linux (Debian, Ubuntu, Arch, Fedora):
+```bash
+python3 halo_playground.py
+```
+
+##### On Windows:
+```cmd
+python halo_playground.py
+:: or using Python Launcher:
+py halo_playground.py
+```
+
+> [!TIP]
+> **Enabling Native C++20 Hardware Speed (< 25 µs in Python)**:  
+> Run `./build_and_verify.sh` once in your terminal. This compiles `libhalo_core.dylib` (macOS), `libhalo_core.so` (Linux), or `halo_core.dll` (Windows) in `build/`. When `halo_playground.py` launches, it detects the shared library and switches the engine indicator to `ENGINE: C++20 NATIVE (C-ABI)`. If uncompiled, it gracefully uses `ENGINE: PYTHON FALLBACK`.
+
+---
+
+#### ⌨️ Controls & Keyboard Shortcuts
+
+| Input / Shortcut | Action | Description |
+| :--- | :--- | :--- |
+| **Left Click + Drag** | Draw Wall / Fire LiDAR | Draws obstacles or fires 32-beam LiDAR based on active tool |
+| **Right Click + Drag**| Erase Obstacle | Instantly clears obstacles beneath cursor |
+| **Drag Green S / Red G**| Move Start / Goal | Real-time path re-route as you drag waypoints across the grid |
+| <kbd>Space</kbd> | Toggle Flight | Starts or pauses drone flight simulation |
+| <kbd>C</kbd> | Clear Grid | Wipes all static obstacles |
+| <kbd>M</kbd> | Next Preset Map | Cycles through Clear, Sparse, Dense, Maze, Chokepoints |
+| <kbd>R</kbd> | Reset Drone | Snaps drone back to Start waypoint |
+| <kbd>1</kbd> - <kbd>6</kbd> | Switch Tools | Quick switch between Wall, Erase, Probe, Start, Goal, Dog Test |
+| <kbd>Esc</kbd> | Halt Action | Stops continuous drone flight or benchmark run |
+
 ---
 
 ## 🏗️ Project Directory Layout
@@ -421,6 +526,7 @@ halo-aegis-core/
 │       └── halo_math.h             # Fast rsqrt, fixed-point math, lerp, clamp
 ├── examples/           # Standalone execution examples
 │   ├── main.cpp        # Omni-shadow path visualization (zero iostream, < 34 KB binary)
+│   ├── halo_c_api.cpp  # C-ABI export layer for Python ctypes and external game engines
 │   └── esp32_arduino/  # Plug-and-play Arduino / ESP-IDF microcontroller examples
 ├── tests/              # Hardware verification and benchmark test harnesses
 │   ├── halo_benchmark.cpp               # Master suite: Gate 1 (Raycast), Gate 2 (JPS+), Gate 3 (Drone)
@@ -436,6 +542,7 @@ halo-aegis-core/
 ├── docs/               # In-depth architectural documentation
 │   ├── TECHNICAL_WHITEPAPER.md          # Formal mathematical models and SIMD analysis (English)
 │   └── TECHNICAL_WHITEPAPER.vn.md       # Sách trắng kỹ thuật toàn diện chứng minh toán học (Tiếng Việt)
+├── halo_playground.py  # Interactive Cyber-Aerospace Python Playground & Kinodynamics GUI
 ├── .clang-format       # Strict C++20 formatting standard (Clang-Format Invariant)
 ├── .clang-tidy         # Static analysis bug hunter & memory safety checks
 ├── CMakeLists.txt      # Modern CMake configuration

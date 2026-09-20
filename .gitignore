@@ -1,9 +1,11 @@
-# Operating System & IDE
+# Operating System, Python & IDE
 .DS_Store
 .idea/
 .vscode/
 *.swp
 *~
+__pycache__/
+*.pyc
 
 # Build artifacts and debug symbols
 *.dSYM/
@@ -19,4 +21,5 @@ build/
 
 # Executables & test binaries
 /halo_*
+!/halo_playground.py
 /test_*
