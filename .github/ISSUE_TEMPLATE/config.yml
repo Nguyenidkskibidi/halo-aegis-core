@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions (EN / VN)
+    url: https://github.com/Nguyenidkskibidi/halo-aegis-core/discussions
+    about: Ask architectural questions, discuss SAR integration, or share community benchmarks. / Thảo luận kỹ thuật & cứu nạn.
+  - name: 📖 Technical Whitepaper (English)
+    url: https://github.com/Nguyenidkskibidi/halo-aegis-core/blob/main/docs/TECHNICAL_WHITEPAPER.md
+    about: In-depth mathematical equations, SWAR bitboards, and C^3 kinodynamics.
+  - name: 📖 Bạch Thư Kỹ Thuật (Tiếng Việt)
+    url: https://github.com/Nguyenidkskibidi/halo-aegis-core/blob/main/docs/TECHNICAL_WHITEPAPER.vn.md
+    about: Phương trình toán học, phân tích vi kiến trúc SWAR và động lực học C^3 chi tiết.
+  - name: 📧 Direct Author Contact / Liên Hệ Tác Giả
+    url: mailto:khoinguyennguyen683@gmail.com
+    about: Direct fallback email if you did not receive a response within 48-72h. / Email trực tiếp nếu không nhận được phản hồi.

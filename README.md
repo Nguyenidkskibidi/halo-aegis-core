@@ -34,7 +34,9 @@
 8. [🛠️ Independent Build & Verification Pipeline](#️-independent-build--verification-pipeline)
    - [📖 How to Read the Pipeline Output Telemetry](#-how-to-read-the-pipeline-output-telemetry-stage-by-stage-guide)
 9. [📜 Ethical License & Humanitarian Mandate](#-ethical-license--humanitarian-mandate)
-10. [🇻🇳 Vietnamese Documentation Access](#-vietnamese-documentation-access)
+10. [🐛 Reporting Issues, Feature Requests & Direct Contact](#-reporting-issues-feature-requests--direct-contact)
+11. [❓ Frequently Asked Questions (FAQ)](#-frequently-asked-questions-faq)
+12. [🇻🇳 Vietnamese Documentation Access](#-vietnamese-documentation-access)
 
 ---
 
@@ -530,6 +532,54 @@ H.A.L.O. Aegis Core is licensed under the **Hippocratic License HL3-CL-ECO-LAW-M
 - **Strictly Prohibited**: Offensive weapon systems, autonomous targeting algorithms, warfare platforms, state surveillance, or human rights violations.
 
 > *"We do not just calculate paths. We guide lives home."* 🚑✨🌱
+
+---
+
+## 🐛 Reporting Issues, Feature Requests & Direct Contact
+
+We welcome community feedback, bug reports, hardware ports, and optimization proposals.
+
+> [!IMPORTANT]
+> **Use Official Issue Templates:**  
+> Whether you submit an issue through GitHub or directly via email, **please retrieve and fill out the standardized markdown templates** located in [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/):
+>
+> | Type | 🇬🇧 English Template | 🇻🇳 Bản Tiếng Việt | Purpose |
+> |---|---|---|---|
+> | **Bug Report** | [`bug_report.md`](.github/ISSUE_TEMPLATE/bug_report.md) | [`bug_report.vn.md`](.github/ISSUE_TEMPLATE/bug_report.vn.md) | Reproducible bug reports with architecture, MRE snippet, and sanitizer logs. |
+> | **Optimization** | [`optimization.md`](.github/ISSUE_TEMPLATE/optimization.md) | [`optimization.vn.md`](.github/ISSUE_TEMPLATE/optimization.vn.md) | Silicon-level intrinsic proposals with benchmark metrics and assembly diffs. |
+> | **Feature Request** | [`feature_request.md`](.github/ISSUE_TEMPLATE/feature_request.md) | [`feature_request.vn.md`](.github/ISSUE_TEMPLATE/feature_request.vn.md) | Autonomous robotics capabilities, new kinodynamic models, or sensor drivers. |
+> | **Hardware / MCU Port** | [`hardware_port.md`](.github/ISSUE_TEMPLATE/hardware_port.md) | [`hardware_port.vn.md`](.github/ISSUE_TEMPLATE/hardware_port.vn.md) | Verification logs and memory footprint on new microcontrollers or SBCs. |
+> | **Pull Request** | [`PULL_REQUEST_TEMPLATE.md`](.github/PULL_REQUEST_TEMPLATE.md) | [`PULL_REQUEST_TEMPLATE.vn.md`](.github/PULL_REQUEST_TEMPLATE.vn.md) | PR submission checklist enforcing all 11 stages of `./scripts/build_and_verify.sh`. |
+> | **Security Policy** | [`SECURITY.md`](.github/SECURITY.md) | [`SECURITY.vn.md`](.github/SECURITY.vn.md) | Responsible vulnerability disclosures and ethical compliance reports. |
+
+### 📧 Direct Email Contact & Escalation
+If you prefer reporting via email, need urgent assistance for real-world robotics/SAR deployments, or have not received a response on GitHub within **48–72 hours**, please copy the template content, fill in the details, and email directly to:
+
+👉 **Email:** `khoinguyennguyen683@gmail.com`  
+*(Subject format: `[HALO-BUG]`, `[HALO-OPT]`, `[HALO-FEAT]`, or `[HALO-PORT]` followed by a brief summary)*
+
+---
+
+## ❓ Frequently Asked Questions (FAQ)
+
+### Q1: Is the 0.35 ns raycast latency real, or did the compiler eliminate the code (Dead Code Elimination)?
+**Answer:** It is 100% genuine silicon execution time measured on physical hardware. We prevent Dead Code Elimination (DCE) across all benchmark suites by piping results through `benchmark::DoNotOptimize()` and volatile sinks. The sub-nanosecond speed is achieved because 64 grid cells are packed into a single 64-bit word (`uint64_t`). Raycasting along a coordinate row collapses mathematically into a single bitwise shift, a bitwise AND, and a hardware single-cycle leading/trailing-zero count instruction (`clz` on ARM64, `bsr`/`tzcnt` on x86). On a 3.5–4.0 GHz processor core, 1 clock cycle is ~0.25 ns. Thus, a 0.35 ns raycast executes in less than 2 clock cycles directly inside CPU registers with zero memory accesses.
+
+### Q2: How can this run on a $2 ESP32 with only 320 KB RAM without running out of memory (OOM)?
+**Answer:** H.A.L.O. Aegis Core contains **zero runtime heap allocations** (`0` calls to `malloc`, `free`, `new`, `delete`). By defining `HALO_EMBEDDED_TARGET=1` or initializing via `BootSystemStatic()`, all 10-layer bitboards, spatial jump tables, closed sets, and trajectory buffers reside within a single static 64 KB memory envelope (actual SRAM footprint is only **57,472 bytes**). It requires zero external dependencies (no OpenCV, PCL, or ROS libraries). Furthermore, floating-point math can be completely bypassed on soft-FPU chips using the built-in 32-bit fixed-point (`Fixed32` Q16.16) integer LUT trigonometric and square-root engine.
+
+### Q3: What makes this superior to traditional A* or ROS 2 Nav2 (Smac Planner / DWB)?
+**Answer:** Traditional A* and grid routers allocate heap node objects, manage dynamic priority queues (`std::priority_queue` with pointer chasing), and induce severe cache thrashing on large grids (often requiring tens to hundreds of milliseconds on a $512 \times 512$ map). H.A.L.O. uses **True JPS+ (Jump Point Search+)** pre-computed jump lookups combined with SWAR 10-layer bitboards and hierarchical macro-portals. It prunes 99.8% of symmetric grid space before evaluation, yielding median latencies of **167 ns** and P99 tail latencies under **417 ns** (> 10,000x faster than traditional A*). Furthermore, H.A.L.O. features integrated $C^3$ continuous quintic polynomial trajectory synthesis and dynamic obstacle reflex avoidance operating at frequencies over 30 MHz.
+
+### Q4: Can I integrate H.A.L.O. into ROS 2, Unreal Engine 5, or Unity?
+**Answer:** Yes, seamlessly. H.A.L.O. is a header-only modern C++20 library with a dedicated zero-copy C-ABI interop layer ([`halo_engine_interop.h`](include/halo/interop/halo_engine_interop.h)). You can drop the `include/` directory directly into:
+- **ROS 2**: Build within a ROS 2 C++ node via `colcon build`.
+- **Unreal Engine 5**: Add `halo_aegis_core` to your module's `PublicIncludePaths` in `YourGame.Build.cs`.
+- **Unity**: Compile into a native shared library (`.so` / `.dylib` / `.dll`) and call functions with zero memory copying via C# `[DllImport]`.  
+Raw sensor pointers (depth buffers, 360° LiDAR range arrays, sonar cones) can be ingested directly into the bitboard without intermediate data conversions.
+
+### Q5: What are the licensing terms? Can I use it in commercial robotics products?
+**Answer:** H.A.L.O. Aegis Core is licensed under the **Hippocratic License HL3-CL-ECO-LAW-MIL-SUP-SV** (Ethical Open Source). You are fully permitted and enthusiastically encouraged to use it in commercial civilian robotics, autonomous mobile robots (AMRs), warehouse automation, humanitarian Search & Rescue (SAR), disaster relief, medical delivery, agricultural drones, academic research, and video games. The **sole restriction** is that it cannot be utilized in offensive warfare platforms, lethal autonomous weapons, military targeting systems, or state surveillance violating human rights.
 
 ---
 
